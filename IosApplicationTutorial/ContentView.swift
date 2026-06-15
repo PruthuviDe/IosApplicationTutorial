@@ -1,10 +1,3 @@
-//
-//  ContentView.swift
-//  IosApplicationTutorial
-//
-//  Created by Pruthuvi de Silva on 2026-06-15.
-//
-
 import SwiftUI
 import Combine
 
@@ -18,43 +11,68 @@ struct ContentView: View {
 
     var body: some View {
 
-        VStack(spacing: 30) {
+        if timeRemaining == 0 {
 
-            Text("Tap Frenzy")
-                .font(.largeTitle)
-                .fontWeight(.bold)
+            VStack(spacing: 20) {
 
-            Text("Score: \(score)")
-                .font(.title)
+                Text("Game Over!")
+                    .font(.largeTitle)
+                    .fontWeight(.bold)
 
-            Text("Time: \(timeRemaining)")
+                Text("Your Score: \(score)")
+                    .font(.title)
+
+                Button("Play Again") {
+                    restartGame()
+                }
                 .font(.title2)
-                .foregroundColor(.orange)
+                .padding()
+                .background(Color.blue)
+                .foregroundColor(.white)
+                .clipShape(Capsule())
+            }
+            .padding()
 
-            Button(action: {
-                score += 1
-            }) {
+        } else {
 
-                Text("TAP!!")
-                    .font(.system(size: 40, weight: .bold))
-                    .foregroundColor(.white)
-                    .frame(width: 250, height: 250)
-                    .background(Color.blue)
-                    .clipShape(Circle())
+            VStack(spacing: 30) {
+
+                Text("Tap Frenzy")
+                    .font(.largeTitle)
+                    .fontWeight(.bold)
+
+                Text("Score: \(score)")
+                    .font(.title)
+
+                Text("Time: \(timeRemaining)")
+                    .font(.title2)
+                    .foregroundColor(.orange)
+
+                Button(action: {
+                    score += 1
+                }) {
+
+                    Text("TAP!!")
+                        .font(.system(size: 40, weight: .bold))
+                        .foregroundColor(.white)
+                        .frame(width: 250, height: 250)
+                        .background(Color.blue)
+                        .clipShape(Circle())
+                }
+            }
+            .padding()
+
+            .onReceive(timer) { _ in
+                if timeRemaining > 0 {
+                    timeRemaining -= 1
+                }
             }
         }
-        .padding()
-        .frame(
-            maxWidth: .infinity,
-            maxHeight: .infinity,
-            alignment: .center
-        )
-        
-        .onReceive(timer) { _ in
-            if timeRemaining > 0 {
-                timeRemaining -= 1
-            }
-        }
+    }
+
+    func restartGame() {
+        score = 0
+        timeRemaining = 10
     }
 }
 
