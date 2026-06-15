@@ -5,8 +5,8 @@ struct ContentView: View {
 
     @State private var score = 0
     @State private var timeRemaining = 10
+    @State private var highScore = 0
 
-    // Countdown timer
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
     var body: some View {
@@ -22,6 +22,10 @@ struct ContentView: View {
                 Text("Your Score: \(score)")
                     .font(.title)
 
+                Text("High Score: \(highScore)")
+                    .font(.title2)
+                    .foregroundColor(.orange)
+
                 Button("Play Again") {
                     restartGame()
                 }
@@ -32,6 +36,7 @@ struct ContentView: View {
                 .clipShape(Capsule())
             }
             .padding()
+
 
         } else {
 
@@ -63,8 +68,13 @@ struct ContentView: View {
             .padding()
 
             .onReceive(timer) { _ in
+
                 if timeRemaining > 0 {
                     timeRemaining -= 1
+                }
+
+                if timeRemaining == 0 && score > highScore {
+                    highScore = score
                 }
             }
         }
