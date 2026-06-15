@@ -7,6 +7,11 @@ struct ContentView: View {
     @State private var timeRemaining = 10
     @State private var highScore = 0
 
+   
+    @State private var comboMultiplier = 1
+    @State private var lastTapTime = Date()
+
+    // Countdown timer
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
     var body: some View {
@@ -49,12 +54,34 @@ struct ContentView: View {
                 Text("Score: \(score)")
                     .font(.title)
 
+ 
+                if comboMultiplier > 1 {
+                    Text("×\(comboMultiplier) COMBO!")
+                        .font(.title2)
+                        .fontWeight(.bold)
+                        .foregroundColor(.red)
+                }
+
                 Text("Time: \(timeRemaining)")
                     .font(.title2)
                     .foregroundColor(.orange)
 
                 Button(action: {
-                    score += 1
+
+    
+                    let now = Date()
+
+                    if now.timeIntervalSince(lastTapTime) < 0.5 {
+                        comboMultiplier += 1
+                    } else {
+                        comboMultiplier = 1
+                    }
+
+                    lastTapTime = now
+
+     
+                    score += comboMultiplier
+
                 }) {
 
                     Text("TAP!!")
@@ -66,6 +93,7 @@ struct ContentView: View {
                 }
             }
             .padding()
+
 
             .onReceive(timer) { _ in
 
@@ -83,6 +111,8 @@ struct ContentView: View {
     func restartGame() {
         score = 0
         timeRemaining = 10
+        comboMultiplier = 1
+        lastTapTime = Date()
     }
 }
 
