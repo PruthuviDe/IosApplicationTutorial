@@ -19,6 +19,8 @@ struct ContentView: View {
     @State private var buttonOffsetX = 0.0
     @State private var buttonOffsetY = 0.0
 
+    @State private var isBonusBurst = false
+
     // Countdown timer
     let timer = Timer.publish(
         every: 1,
@@ -26,7 +28,7 @@ struct ContentView: View {
         in: .common
     ).autoconnect()
 
-    // Changes button colour
+    // Changes button
     let colourTimer = Timer.publish(
         every: 2.5,
         on: .main,
@@ -174,6 +176,13 @@ struct ContentView: View {
                         .padding(.bottom, 4)
                 }
 
+                if isBonusBurst {
+                    Label("BONUS BURST! x2 POINTS!", systemImage: "flame.fill")
+                        .font(.system(size: 18, weight: .heavy))
+                        .foregroundColor(.yellow)
+                        .padding(.bottom, 4)
+                }
+
                 if buttonType == 1 {
                     Label("BONUS: +3 per tap", systemImage: "star.fill")
                         .font(.subheadline.weight(.semibold))
@@ -266,6 +275,13 @@ struct ContentView: View {
                 if gameStarted && timeRemaining > 0 {
                     timeRemaining -= 1
 
+                    if timeRemaining == 7 {
+                        isBonusBurst = true
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                            isBonusBurst = false
+                        }
+                    }
+
                     if timeRemaining <= 3 && !timerPulse {
                         withAnimation(
                             .easeInOut(duration: 0.5)
@@ -324,7 +340,7 @@ struct ContentView: View {
 
         if buttonType == 1 {
 
-            score += 3
+            score += isBonusBurst ? 6 : 3
 
         } else if buttonType == 2 {
 
@@ -334,7 +350,7 @@ struct ContentView: View {
 
         } else {
 
-            score += comboMultiplier
+            score += isBonusBurst ? comboMultiplier * 2 : comboMultiplier
         }
 
         withAnimation(.spring(response: 0.2, dampingFraction: 0.5)) {
@@ -363,6 +379,7 @@ struct ContentView: View {
         glowExpand = false
         buttonOffsetX = 0.0
         buttonOffsetY = 0.0
+        isBonusBurst = false
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
             withAnimation(
