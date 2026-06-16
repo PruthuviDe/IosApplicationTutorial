@@ -233,6 +233,8 @@ struct ContentView: View {
                     )
                 }
                 .offset(x: buttonOffsetX, y: buttonOffsetY)
+                .scaleEffect(0.4 + (Double(timeRemaining) / 10.0 * 0.6))
+                .animation(.easeInOut(duration: 0.8), value: timeRemaining)
                 .onAppear {
                     withAnimation(
                         .easeOut(duration: 1.8)
