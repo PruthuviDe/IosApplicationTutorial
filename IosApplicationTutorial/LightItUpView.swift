@@ -80,6 +80,8 @@ struct LightItUpView: View {
     @State private var flashMessage = ""
     @State private var flashColor = Color.cyan
 
+    @State private var isTransitioning = false
+
     // Countdown
     let countdownTimer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
@@ -97,6 +99,21 @@ struct LightItUpView: View {
 
     var gridColumns: [GridItem] {
         return Array(repeating: GridItem(.fixed(100)), count: currentLevel.columns)
+    }
+
+    var safeToLightCard: Bool {
+        if currentLevel == .L4 { return true }
+        let elapsed = roundLength - timeRemaining
+        let quarter = roundLength / 4
+        let levelEndElapsed: Int
+        switch currentLevel {
+        case .L1: levelEndElapsed = quarter
+        case .L2: levelEndElapsed = quarter * 2
+        case .L3: levelEndElapsed = quarter * 3
+        case .L4: return true
+        }
+        let timeLeftInLevel = levelEndElapsed - elapsed
+        return Double(timeLeftInLevel) > currentLevel.litWindow
     }
 
     var body: some View {
@@ -243,20 +260,26 @@ struct LightItUpView: View {
                     timeRemaining -= 1
 
                     if currentLevel != prevLevel {
+
+                        for i in 0..<cards.count { cards[i].isLit = false }
+
                         cards = Array(repeating: Card(), count: currentLevel.cardCount)
                         lightAccumulator = 0
+
+                        isTransitioning = true
 
                         flashMessage = currentLevel.name.uppercased() + "!"
                         flashColor = currentLevel.glowColor
                         showLevelFlash = true
                         DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
                             showLevelFlash = false
+                            isTransitioning = false
                         }
                     }
                 }
             }
             .onReceive(lightTimer) { _ in
-                if gameStarted && lives > 0 {
+                if gameStarted && lives > 0 && !isTransitioning {
                     lightAccumulator += 0.4
 
                     if lightAccumulator >= currentLevel.litWindow {
@@ -264,16 +287,13 @@ struct LightItUpView: View {
 
                         var anyMissed = false
                         for i in 0..<cards.count {
-                            if cards[i].isLit {
-                                anyMissed = true
-                            }
+                            if cards[i].isLit { anyMissed = true }
                             cards[i].isLit = false
                         }
-                        if anyMissed {
-                            lives -= 1
-                        }
 
-                        if lives > 0 {
+                        if anyMissed { lives -= 1 }
+
+                        if lives > 0 && safeToLightCard {
                             let shuffledIndices = cards.indices.shuffled()
                             for i in 0..<min(currentLevel.litCount, shuffledIndices.count) {
                                 cards[shuffledIndices[i]].isLit = true
