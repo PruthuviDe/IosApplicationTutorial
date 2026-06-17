@@ -8,12 +8,12 @@ struct HomeView: View {
 
             VStack(spacing: 24) {
 
-                Text("Game Arcade")
+                Text("Game Collection")
                     .font(.largeTitle)
                     .fontWeight(.bold)
                     .foregroundColor(.white)
 
-                Text("Pick a game")
+                Text("Select a game")
                     .foregroundColor(.white.opacity(0.6))
 
                 Spacer()
@@ -29,7 +29,7 @@ struct HomeView: View {
                         .cornerRadius(12)
                 }
 
-                NavigationLink(destination: LightItUpView()) {
+                NavigationLink(destination: LightItUpMenuView()) {
                     Text("Light It Up")
                         .font(.title2)
                         .fontWeight(.bold)

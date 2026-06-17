@@ -5,7 +5,7 @@ struct ContentView: View {
 
     @State private var score = 0
     @State private var timeRemaining = 10
-    @State private var highScore = 0
+    @AppStorage("tapFrenzyHighScore") private var highScore = 0
     @State private var comboMultiplier = 1
     @State private var lastTapTime = Date()
     @State private var buttonType = 0
