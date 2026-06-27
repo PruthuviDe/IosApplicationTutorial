@@ -1,1 +1,5 @@
+# Markdown notes
 *.md
+
+# macOS
+.DS_Store
