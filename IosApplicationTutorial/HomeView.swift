@@ -45,6 +45,14 @@ struct HomeView: View {
             .padding(.horizontal, 32)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(Color.black)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    NavigationLink(destination: HighScoreView()) {
+                        Image(systemName: "trophy.fill")
+                            .foregroundColor(.yellow)
+                    }
+                }
+            }
         }
     }
 }
