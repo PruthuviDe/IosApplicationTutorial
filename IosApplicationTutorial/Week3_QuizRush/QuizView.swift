@@ -6,6 +6,14 @@ struct QuizView: View {
     @State private var currentAnswers: [String] = []
     @AppStorage("quizRushHighScore") private var highScore = 0
 
+    // --- Animation state ---
+    // flashColor: briefly colours the whole screen green (correct) or red (wrong)
+    @State private var flashColor: Color = .clear
+    // shakeOffset: moves the question text left/right on a wrong answer
+    @State private var shakeOffset: CGFloat = 0
+    // isAnswering: locks buttons so the player can't tap twice during feedback
+    @State private var isAnswering = false
+
     var body: some View {
 
         Group {
@@ -27,6 +35,8 @@ struct QuizView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color.black)
+        // Full-screen colour flash — appears for 0.5s then fades away
+        .overlay(flashColor.ignoresSafeArea().allowsHitTesting(false))
 
         .task {
             await viewModel.load()
@@ -120,12 +130,43 @@ struct QuizView: View {
                 .foregroundColor(.white)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 24)
+                // Shake applied here — moves left/right on wrong answer
+                .offset(x: shakeOffset)
 
             Spacer()
             VStack(spacing: 12) {
                 ForEach(currentAnswers, id: \.self) { answer in
                     Button {
-                        viewModel.answer(answer)
+                        // Ignore taps while feedback animation is running
+                        guard !isAnswering else { return }
+                        isAnswering = true
+
+                        let correct = viewModel.currentQuestion?.decodedCorrectAnswer
+                        let isCorrect = answer == correct
+
+                        if isCorrect {
+                            // Green flash for correct answer
+                            withAnimation(.easeIn(duration: 0.15)) {
+                                flashColor = Color.green.opacity(0.35)
+                            }
+                        } else {
+                            // Red flash + left-right shake for wrong answer
+                            withAnimation(.easeIn(duration: 0.15)) {
+                                flashColor = Color.red.opacity(0.35)
+                            }
+                            withAnimation(.easeInOut(duration: 0.06).repeatCount(5, autoreverses: true)) {
+                                shakeOffset = 12
+                            }
+                        }
+
+                        // Wait 0.5s so the player can see the feedback,
+                        // then advance to the next question
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                            withAnimation { flashColor = .clear }
+                            shakeOffset = 0
+                            viewModel.answer(answer)
+                            isAnswering = false
+                        }
                     } label: {
                         Text(answer)
                             .font(.body)
