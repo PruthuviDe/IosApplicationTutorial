@@ -2,21 +2,12 @@ import SwiftUI
 
 struct QuizView: View {
 
-    // @StateObject: this View OWNS the ViewModel.
-    // SwiftUI creates it once and keeps it alive as long as the View is on screen.
     @StateObject private var viewModel = QuizViewModel()
-
-    // We store shuffled answers in @State to avoid re-shuffling on every redraw.
-    // (shuffledAnswers calls .shuffled() which gives different results each time,
-    //  so we compute once per question and save the result here.)
     @State private var currentAnswers: [String] = []
-
-    // Saves the best score across app restarts
     @AppStorage("quizRushHighScore") private var highScore = 0
 
     var body: some View {
 
-        // Switch on viewState to decide what to show
         Group {
             switch viewModel.viewState {
 
@@ -27,7 +18,6 @@ struct QuizView: View {
                 errorView(error: error)
 
             case .loaded:
-                // Show results after all questions, otherwise show the game
                 if viewModel.isFinished {
                     resultsView
                 } else {
@@ -38,19 +28,14 @@ struct QuizView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color.black)
 
-        // .task runs when the view appears — triggers the async network fetch
         .task {
             await viewModel.load()
             currentAnswers = viewModel.currentQuestion?.decodedShuffledAnswers() ?? []
         }
-
-        // When the question index changes, compute fresh shuffled answers
         .onChange(of: viewModel.currentIndex) {
             currentAnswers = viewModel.currentQuestion?.decodedShuffledAnswers() ?? []
         }
     }
-
-    // MARK: - Loading View
 
     var loadingView: some View {
         VStack(spacing: 20) {
@@ -61,8 +46,6 @@ struct QuizView: View {
                 .foregroundColor(.white.opacity(0.6))
         }
     }
-
-    // MARK: - Error View
 
     func errorView(error: Error) -> some View {
         VStack(spacing: 24) {
@@ -84,7 +67,6 @@ struct QuizView: View {
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 32)
 
-            // Retry button — calls load() again
             Button("Retry") {
                 Task { await viewModel.load() }
             }
@@ -101,22 +83,16 @@ struct QuizView: View {
         }
     }
 
-    // MARK: - Question View
-
     var questionView: some View {
         VStack(spacing: 20) {
-
-            // --- Top HUD ---
             HStack {
 
-                // Progress: "3 of 10"
                 Text("\(viewModel.currentIndex + 1) of \(viewModel.questions.count)")
                     .font(.headline)
                     .foregroundColor(.purple)
 
                 Spacer()
 
-                // Streak indicator — only shown when streak > 0
                 if viewModel.streak > 0 {
                     HStack(spacing: 4) {
                         Image(systemName: "flame.fill")
@@ -129,7 +105,6 @@ struct QuizView: View {
 
                 Spacer()
 
-                // Current score
                 Text("Score: \(viewModel.score)")
                     .fontWeight(.bold)
                     .foregroundColor(.white)
@@ -139,7 +114,6 @@ struct QuizView: View {
 
             Spacer()
 
-            // --- Question Text ---
             Text(viewModel.currentQuestion?.decodedQuestion ?? "")
                 .font(.title3)
                 .fontWeight(.semibold)
@@ -148,9 +122,6 @@ struct QuizView: View {
                 .padding(.horizontal, 24)
 
             Spacer()
-
-            // --- Answer Buttons ---
-            // ForEach over the pre-shuffled answers stored in @State
             VStack(spacing: 12) {
                 ForEach(currentAnswers, id: \.self) { answer in
                     Button {
@@ -176,8 +147,6 @@ struct QuizView: View {
             .padding(.bottom, 40)
         }
     }
-
-    // MARK: - Results View
 
     var resultsView: some View {
         VStack(spacing: 24) {
@@ -219,7 +188,6 @@ struct QuizView: View {
             Spacer()
         }
         .onAppear {
-            // Save high score when the results screen appears
             if viewModel.score > highScore {
                 highScore = viewModel.score
             }
