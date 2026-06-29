@@ -4,6 +4,7 @@ struct HighScoreView: View {
 
     @AppStorage("tapFrenzyHighScore") private var tapFrenzyScore = 0
     @AppStorage("lightItUpHighScore") private var lightItUpScore = 0
+    @AppStorage("quizRushHighScore") private var quizRushScore = 0
 
     var body: some View {
 
@@ -34,6 +35,13 @@ struct HighScoreView: View {
                 iconColor: .cyan,
                 gameName: "Light It Up",
                 score: lightItUpScore
+            )
+
+            scoreCard(
+                icon: "questionmark.circle.fill",
+                iconColor: .purple,
+                gameName: "Quiz Rush",
+                score: quizRushScore
             )
 
             Spacer()
