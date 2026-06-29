@@ -76,7 +76,6 @@ struct HighScoreView: View {
         .cornerRadius(12)
     }
 }
-
 #Preview {
     HighScoreView()
 }
