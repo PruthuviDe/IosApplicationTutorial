@@ -40,7 +40,7 @@ struct HomeView: View {
                         .cornerRadius(12)
                 }
 
-                NavigationLink(destination: QuizView()) {
+                NavigationLink(destination: QuizMenuView()) {
                     Text("Quiz Rush")
                         .font(.title2)
                         .fontWeight(.bold)
