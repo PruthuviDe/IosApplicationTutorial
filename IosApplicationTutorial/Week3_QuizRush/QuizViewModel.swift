@@ -13,7 +13,13 @@ class QuizViewModel: ObservableObject {
     @Published var questions: [QuizQuestion] = []
     @Published var currentIndex: Int = 0
     @Published var score: Int = 0
-    @Published var streak: Int = 0 
+    @Published var streak: Int = 0
+
+    // Reads the same AppStorage keys that QuizMenuView writes to.
+    // When the user changes category or difficulty in the menu,
+    // the next load() call automatically uses the new values.
+    @AppStorage("quizCategoryId") private var categoryId = 0
+    @AppStorage("quizDifficulty") private var difficulty = "any"
 
     private let service = QuizService()
 
@@ -34,7 +40,10 @@ class QuizViewModel: ObservableObject {
 
         do {
 
-            let fetched = try await service.fetchQuestions()
+            let fetched = try await service.fetchQuestions(
+                categoryId: categoryId,
+                difficulty: difficulty
+            )
 
             await MainActor.run {
                 questions = fetched
