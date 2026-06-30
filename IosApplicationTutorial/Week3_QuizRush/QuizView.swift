@@ -1,14 +1,19 @@
 import SwiftUI
+import Combine
 
 struct QuizView: View {
 
     @StateObject private var viewModel = QuizViewModel()
     @State private var currentAnswers: [String] = []
     @AppStorage("quizRushHighScore") private var highScore = 0
+    @AppStorage("quizTimerSeconds") private var timerSeconds = 0
 
     @State private var flashColor: Color = .clear
     @State private var shakeOffset: CGFloat = 0
     @State private var isAnswering = false
+    @State private var timeRemaining: Int = 0
+
+    private let countdown = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
     var body: some View {
 
@@ -36,13 +41,44 @@ struct QuizView: View {
         .task {
             await viewModel.load()
             currentAnswers = viewModel.currentQuestion?.decodedShuffledAnswers() ?? []
+            timeRemaining = timerSeconds
         }
         .onChange(of: viewModel.currentIndex) {
             currentAnswers = viewModel.currentQuestion?.decodedShuffledAnswers() ?? []
+            timeRemaining = timerSeconds
+        }
+        .onReceive(countdown) { _ in
+            guard timerSeconds > 0,
+                  !isAnswering,
+                  case .loaded = viewModel.viewState,
+                  !viewModel.isFinished else { return }
+
+            if timeRemaining > 0 {
+                timeRemaining -= 1
+            } else {
+                isAnswering = true
+                withAnimation(.easeIn(duration: 0.15)) {
+                    flashColor = Color.red.opacity(0.35)
+                }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    withAnimation { flashColor = .clear }
+                    viewModel.answer("")
+                    isAnswering = false
+                }
+            }
         }
     }
 
+    var timerColor: Color {
+        guard timerSeconds > 0 else { return .clear }
+        let ratio = Double(timeRemaining) / Double(timerSeconds)
+        if ratio > 0.5 { return .green }
+        if ratio > 0.25 { return .orange }
+        return .red
+    }
+
     var loadingView: some View {
+
         VStack(spacing: 20) {
             ProgressView()
                 .scaleEffect(1.5)
@@ -116,6 +152,21 @@ struct QuizView: View {
             }
             .padding(.horizontal, 24)
             .padding(.top, 60)
+
+            if timerSeconds > 0 {
+                GeometryReader { geo in
+                    ZStack(alignment: .leading) {
+                        RoundedRectangle(cornerRadius: 4)
+                            .fill(Color.white.opacity(0.1))
+                        RoundedRectangle(cornerRadius: 4)
+                            .fill(timerColor)
+                            .frame(width: geo.size.width * CGFloat(timeRemaining) / CGFloat(timerSeconds))
+                            .animation(.linear(duration: 1), value: timeRemaining)
+                    }
+                }
+                .frame(height: 6)
+                .padding(.horizontal, 24)
+            }
 
             Spacer()
 

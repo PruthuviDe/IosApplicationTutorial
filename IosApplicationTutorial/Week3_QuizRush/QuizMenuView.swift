@@ -2,12 +2,11 @@ import SwiftUI
 
 struct QuizMenuView: View {
 
-    // Settings saved to device storage — same keys QuizViewModel will read
     @AppStorage("quizCategoryId") private var categoryId = 0
     @AppStorage("quizDifficulty") private var difficulty = "any"
+    @AppStorage("quizAmount") private var amount = 10
+    @AppStorage("quizTimerSeconds") private var timerSeconds = 0
 
-    // Curated list of categories from Open Trivia DB
-    // id: 0 means "Any" — no category param in the URL
     let categories: [(id: Int, name: String)] = [
         (0,  "Any Category"),
         (9,  "General Knowledge"),
@@ -23,99 +22,136 @@ struct QuizMenuView: View {
     ]
 
     let difficulties = ["any", "easy", "medium", "hard"]
+    let amounts = [5, 10, 15, 20]
+    let timerOptions = [0, 10, 15, 30]
 
-    // Returns the display name for the currently selected category id
     var selectedCategoryName: String {
         categories.first { $0.id == categoryId }?.name ?? "Any Category"
     }
 
+    func timerLabel(_ seconds: Int) -> String {
+        seconds == 0 ? "Off" : "\(seconds)s"
+    }
+
     var body: some View {
 
-        VStack(spacing: 32) {
+        VStack(spacing: 0) {
 
-            Spacer()
+            ScrollView {
+                VStack(spacing: 24) {
 
-            // --- Title ---
-            VStack(spacing: 8) {
-                Image(systemName: "questionmark.circle.fill")
-                    .font(.system(size: 60))
-                    .foregroundColor(.purple)
+                    VStack(spacing: 8) {
+                        Image(systemName: "questionmark.circle.fill")
+                            .font(.system(size: 60))
+                            .foregroundColor(.purple)
 
-                Text("Quiz Rush")
-                    .font(.largeTitle)
-                    .fontWeight(.bold)
-                    .foregroundColor(.white)
+                        Text("Quiz Rush")
+                            .font(.largeTitle)
+                            .fontWeight(.bold)
+                            .foregroundColor(.white)
 
-                Text("10 questions · tap fast · build your streak")
-                    .font(.subheadline)
-                    .foregroundColor(.white.opacity(0.5))
-                    .multilineTextAlignment(.center)
-            }
+                        Text("\(amount) questions · tap fast · build your streak")
+                            .font(.subheadline)
+                            .foregroundColor(.white.opacity(0.5))
+                            .multilineTextAlignment(.center)
+                    }
+                    .padding(.top, 24)
 
-            Spacer()
+                    VStack(spacing: 0) {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("CATEGORY")
+                                .font(.caption)
+                                .fontWeight(.semibold)
+                                .foregroundColor(.purple)
 
-            // --- Settings Card ---
-            VStack(spacing: 0) {
-
-                // Category picker — Menu style shows a dropdown, much more readable on dark background
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("CATEGORY")
-                        .font(.caption)
-                        .fontWeight(.semibold)
-                        .foregroundColor(.purple)
-
-                    // Shows current selection as a button; tapping opens a dropdown list
-                    Menu {
-                        ForEach(categories, id: \.id) { category in
-                            Button(category.name) {
-                                categoryId = category.id
+                            Menu {
+                                ForEach(categories, id: \.id) { category in
+                                    Button(category.name) {
+                                        categoryId = category.id
+                                    }
+                                }
+                            } label: {
+                                HStack {
+                                    Text(selectedCategoryName)
+                                        .font(.body)
+                                        .fontWeight(.semibold)
+                                        .foregroundColor(.white)
+                                    Spacer()
+                                    Image(systemName: "chevron.up.chevron.down")
+                                        .font(.caption)
+                                        .foregroundColor(.purple)
+                                }
+                                .padding()
+                                .background(Color.white.opacity(0.12))
+                                .cornerRadius(10)
                             }
                         }
-                    } label: {
-                        HStack {
-                            Text(selectedCategoryName)
-                                .font(.body)
-                                .fontWeight(.semibold)
-                                .foregroundColor(.white)
-                            Spacer()
-                            Image(systemName: "chevron.up.chevron.down")
+                        .padding()
+                        .background(Color.white.opacity(0.07))
+                        .cornerRadius(12)
+
+                        Divider().background(Color.clear).padding(.vertical, 8)
+
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("DIFFICULTY")
                                 .font(.caption)
+                                .fontWeight(.semibold)
                                 .foregroundColor(.purple)
+
+                            Picker("Difficulty", selection: $difficulty) {
+                                ForEach(difficulties, id: \.self) { level in
+                                    Text(level.capitalized).tag(level)
+                                }
+                            }
+                            .pickerStyle(.segmented)
                         }
                         .padding()
-                        .background(Color.white.opacity(0.12))
-                        .cornerRadius(10)
-                    }
-                }
-                .padding()
-                .background(Color.white.opacity(0.07))
-                .cornerRadius(12)
+                        .background(Color.white.opacity(0.07))
+                        .cornerRadius(12)
 
-                Divider().background(Color.clear).padding(.vertical, 12)
+                        Divider().background(Color.clear).padding(.vertical, 8)
 
-                // Difficulty picker (segmented)
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("DIFFICULTY")
-                        .font(.caption)
-                        .fontWeight(.semibold)
-                        .foregroundColor(.purple)
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("QUESTIONS")
+                                .font(.caption)
+                                .fontWeight(.semibold)
+                                .foregroundColor(.purple)
 
-                    Picker("Difficulty", selection: $difficulty) {
-                        ForEach(difficulties, id: \.self) { level in
-                            Text(level.capitalized).tag(level)
+                            Picker("Amount", selection: $amount) {
+                                ForEach(amounts, id: \.self) { n in
+                                    Text("\(n)").tag(n)
+                                }
+                            }
+                            .pickerStyle(.segmented)
                         }
+                        .padding()
+                        .background(Color.white.opacity(0.07))
+                        .cornerRadius(12)
+
+                        Divider().background(Color.clear).padding(.vertical, 8)
+
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("TIMER PER QUESTION")
+                                .font(.caption)
+                                .fontWeight(.semibold)
+                                .foregroundColor(.purple)
+
+                            Picker("Timer", selection: $timerSeconds) {
+                                ForEach(timerOptions, id: \.self) { seconds in
+                                    Text(timerLabel(seconds)).tag(seconds)
+                                }
+                            }
+                            .pickerStyle(.segmented)
+                        }
+                        .padding()
+                        .background(Color.white.opacity(0.07))
+                        .cornerRadius(12)
                     }
-                    .pickerStyle(.segmented)
+                    .padding(.horizontal, 24)
+                    .padding(.bottom, 16)
                 }
-                .padding()
-                .background(Color.white.opacity(0.07))
-                .cornerRadius(12)
             }
-            .padding(.horizontal, 24)
 
-            Spacer()
-
-            // --- Start Game Button ---
             NavigationLink(destination: QuizView()) {
                 Text("Start Game")
                     .font(.title2)
@@ -127,11 +163,11 @@ struct QuizMenuView: View {
                     .cornerRadius(12)
             }
             .padding(.horizontal, 24)
-            .padding(.bottom, 40)
+            .padding(.vertical, 16)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color.black)
-        .navigationTitle("Quiz Rush")
+        .navigationTitle("")
         .navigationBarTitleDisplayMode(.inline)
     }
 }

@@ -2,15 +2,12 @@ import Foundation
 
 struct QuizService {
 
-    // Base URL — category and difficulty are added only when selected
-    private let baseURL = "https://opentdb.com/api.php?amount=10&type=multiple"
+    private let baseURL = "https://opentdb.com/api.php?amount=10&type=multiple&encode=url3986"
 
-    // categoryId: 0 = Any (no param added)
-    // difficulty: "any" = Any (no param added)
-    func fetchQuestions(categoryId: Int, difficulty: String) async throws -> [QuizQuestion] {
+    func fetchQuestions(categoryId: Int, difficulty: String, amount: Int) async throws -> [QuizQuestion] {
 
-        // Build URL dynamically based on user's settings
         var urlString = baseURL
+        urlString = urlString.replacingOccurrences(of: "amount=10", with: "amount=\(amount)")
         if categoryId != 0     { urlString += "&category=\(categoryId)" }
         if difficulty != "any" { urlString += "&difficulty=\(difficulty)" }
 

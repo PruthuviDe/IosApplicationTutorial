@@ -38,18 +38,6 @@ struct QuizQuestion: Codable {
 
 extension String {
     var htmlDecoded: String {
-        var result = self
-        let entities: [String: String] = [
-            "&quot;"  : "\"",
-            "&#039;"  : "'",
-            "&amp;"   : "&",
-            "&lt;"    : "<",
-            "&gt;"    : ">",
-            "&apos;"  : "'"
-        ]
-        for (entity, character) in entities {
-            result = result.replacingOccurrences(of: entity, with: character)
-        }
-        return result
+        return self.removingPercentEncoding ?? self
     }
 }
