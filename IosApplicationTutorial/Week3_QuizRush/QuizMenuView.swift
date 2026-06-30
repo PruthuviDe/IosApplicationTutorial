@@ -24,6 +24,11 @@ struct QuizMenuView: View {
 
     let difficulties = ["any", "easy", "medium", "hard"]
 
+    // Returns the display name for the currently selected category id
+    var selectedCategoryName: String {
+        categories.first { $0.id == categoryId }?.name ?? "Any Category"
+    }
+
     var body: some View {
 
         VStack(spacing: 32) {
@@ -52,22 +57,35 @@ struct QuizMenuView: View {
             // --- Settings Card ---
             VStack(spacing: 0) {
 
-                // Category picker
+                // Category picker — Menu style shows a dropdown, much more readable on dark background
                 VStack(alignment: .leading, spacing: 8) {
                     Text("CATEGORY")
                         .font(.caption)
                         .fontWeight(.semibold)
                         .foregroundColor(.purple)
 
-                    // Picker scrolls through all categories
-                    Picker("Category", selection: $categoryId) {
+                    // Shows current selection as a button; tapping opens a dropdown list
+                    Menu {
                         ForEach(categories, id: \.id) { category in
-                            Text(category.name).tag(category.id)
+                            Button(category.name) {
+                                categoryId = category.id
+                            }
                         }
+                    } label: {
+                        HStack {
+                            Text(selectedCategoryName)
+                                .font(.body)
+                                .fontWeight(.semibold)
+                                .foregroundColor(.white)
+                            Spacer()
+                            Image(systemName: "chevron.up.chevron.down")
+                                .font(.caption)
+                                .foregroundColor(.purple)
+                        }
+                        .padding()
+                        .background(Color.white.opacity(0.12))
+                        .cornerRadius(10)
                     }
-                    .pickerStyle(.wheel)
-                    .frame(height: 120)
-                    .clipped()
                 }
                 .padding()
                 .background(Color.white.opacity(0.07))
