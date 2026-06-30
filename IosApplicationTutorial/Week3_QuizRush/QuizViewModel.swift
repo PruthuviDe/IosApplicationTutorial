@@ -1,5 +1,6 @@
 import Foundation
 import Combine
+import SwiftUI
 
 enum ViewState {
     case loading          
