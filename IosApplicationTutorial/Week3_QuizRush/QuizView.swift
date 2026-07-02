@@ -13,6 +13,8 @@ struct QuizView: View {
     @State private var isAnswering = false
     @State private var timeRemaining: Int = 0
 
+    @State private var revealAnswers: (selected: String, correct: String)? = nil
+
     private let countdown = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
     var body: some View {
@@ -46,6 +48,7 @@ struct QuizView: View {
         .onChange(of: viewModel.currentIndex) {
             currentAnswers = viewModel.currentQuestion?.decodedShuffledAnswers() ?? []
             timeRemaining = timerSeconds
+            revealAnswers = nil
         }
         .onReceive(countdown) { _ in
             guard timerSeconds > 0,
@@ -75,6 +78,20 @@ struct QuizView: View {
         if ratio > 0.5 { return .green }
         if ratio > 0.25 { return .orange }
         return .red
+    }
+
+    func answerBackground(for answer: String) -> Color {
+        guard let reveal = revealAnswers else { return Color.white.opacity(0.1) }
+        if answer == reveal.correct  { return Color.green.opacity(0.25) }
+        if answer == reveal.selected { return Color.red.opacity(0.25) }
+        return Color.white.opacity(0.04)
+    }
+
+    func answerBorderColor(for answer: String) -> Color {
+        guard let reveal = revealAnswers else { return Color.purple.opacity(0.6) }
+        if answer == reveal.correct  { return Color.green }
+        if answer == reveal.selected { return Color.red }
+        return Color.gray.opacity(0.3)
     }
 
     var loadingView: some View {
@@ -192,6 +209,12 @@ struct QuizView: View {
                             withAnimation(.easeIn(duration: 0.15)) {
                                 flashColor = Color.green.opacity(0.35)
                             }
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                                withAnimation { flashColor = .clear }
+                                shakeOffset = 0
+                                viewModel.answer(answer)
+                                isAnswering = false
+                            }
                         } else {
                             withAnimation(.easeIn(duration: 0.15)) {
                                 flashColor = Color.red.opacity(0.35)
@@ -199,13 +222,15 @@ struct QuizView: View {
                             withAnimation(.easeInOut(duration: 0.06).repeatCount(5, autoreverses: true)) {
                                 shakeOffset = 12
                             }
-                        }
-
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                            withAnimation { flashColor = .clear }
-                            shakeOffset = 0
-                            viewModel.answer(answer)
-                            isAnswering = false
+                            revealAnswers = (selected: answer, correct: correct ?? "")
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                                withAnimation { flashColor = .clear }
+                                shakeOffset = 0
+                            }
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                                viewModel.answer(answer)
+                                isAnswering = false
+                            }
                         }
                     } label: {
                         Text(answer)
@@ -215,11 +240,11 @@ struct QuizView: View {
                             .multilineTextAlignment(.center)
                             .frame(maxWidth: .infinity)
                             .padding()
-                            .background(Color.white.opacity(0.1))
+                            .background(answerBackground(for: answer))
                             .cornerRadius(12)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 12)
-                                    .stroke(Color.purple.opacity(0.6), lineWidth: 1)
+                                    .stroke(answerBorderColor(for: answer), lineWidth: revealAnswers != nil ? 2 : 1)
                             )
                     }
                 }
