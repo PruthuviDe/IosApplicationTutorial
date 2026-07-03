@@ -14,7 +14,7 @@ struct QuizView: View {
     @State private var timeRemaining: Int = 0
 
     @State private var revealAnswers: (selected: String, correct: String)? = nil
-
+    
     private let countdown = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
     var body: some View {
@@ -270,7 +270,6 @@ struct QuizView: View {
 
             Text("Final Score")
                 .foregroundColor(.white.opacity(0.6))
-
             Text("\(viewModel.score)")
                 .font(.system(size: 64, weight: .heavy))
                 .foregroundColor(.purple)
