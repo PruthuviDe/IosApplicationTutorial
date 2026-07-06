@@ -2,7 +2,7 @@ import SwiftUI
 
 struct LightItUpMenuView: View {
 
-    @State private var showSettings = false
+    @AppStorage("roundLength") private var roundLength = 60
 
     var body: some View {
 
@@ -26,11 +26,28 @@ struct LightItUpMenuView: View {
             • Tap the glowing card before it goes dark.
             • Earn points for every correct tap.
             • Missing a glowing card or tapping the wrong card costs a life.
-            • Choose the round length in Settings before starting the game.
             """)
             .font(.subheadline)
             .foregroundColor(.white.opacity(0.7))
             .multilineTextAlignment(.leading)
+
+            // Round length picker (absorbed from SettingsView)
+            VStack(alignment: .leading, spacing: 8) {
+                Text("ROUND LENGTH")
+                    .font(.caption)
+                    .fontWeight(.semibold)
+                    .foregroundColor(.cyan)
+
+                Picker("Round Length", selection: $roundLength) {
+                    Text("30s").tag(30)
+                    Text("60s").tag(60)
+                    Text("90s").tag(90)
+                }
+                .pickerStyle(.segmented)
+            }
+            .padding()
+            .background(Color.white.opacity(0.07))
+            .cornerRadius(12)
 
             Spacer()
 
@@ -43,16 +60,6 @@ struct LightItUpMenuView: View {
                     .padding()
                     .background(Color.cyan)
                     .cornerRadius(12)
-            }
-
-            Button("Settings") {
-                showSettings = true
-            }
-            .font(.headline)
-            .foregroundColor(.white.opacity(0.7))
-            .padding(.vertical, 8)
-            .sheet(isPresented: $showSettings) {
-                SettingsView()
             }
 
             Spacer()

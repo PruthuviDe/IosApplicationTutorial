@@ -11,7 +11,7 @@ import SwiftUI
 struct IosApplicationTutorialApp: App {
     var body: some Scene {
         WindowGroup {
-            HomeView()
+            HomeTab()
         }
     }
 }

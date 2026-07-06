@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct HomeView: View {
+struct HomeTab: View {
 
     var body: some View {
 
@@ -18,7 +18,7 @@ struct HomeView: View {
 
                 Spacer()
 
-                NavigationLink(destination: ContentView()) {
+                NavigationLink(destination: TapFrenzyView()) {
                     Text("Tap Frenzy")
                         .font(.title2)
                         .fontWeight(.bold)
@@ -56,17 +56,9 @@ struct HomeView: View {
             .padding(.horizontal, 32)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(Color.black)
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    NavigationLink(destination: HighScoreView()) {
-                        Image(systemName: "trophy.fill")
-                            .foregroundColor(.yellow)
-                    }
-                }
-            }
         }
     }
 }
 #Preview {
-    HomeView()
+    HomeTab()
 }
