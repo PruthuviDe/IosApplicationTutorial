@@ -290,12 +290,26 @@ struct QuizView: View {
             .cornerRadius(12)
             .padding(.horizontal, 32)
 
+            ShareLink(item: "I just scored \(viewModel.score) on Quiz Rush in PlayHub — beat that! 🎮") {
+                Label("Share Score", systemImage: "square.and.arrow.up")
+                    .font(.subheadline)
+                    .foregroundColor(.purple)
+            }
+
             Spacer()
         }
         .onAppear {
             if viewModel.score > highScore {
                 highScore = viewModel.score
             }
+            // Save game session to history
+            let loc = LocationService.shared.coordinate
+            SessionStore.shared.save(session: GameSession(
+                mode: .quizRush,
+                score: viewModel.score,
+                latitude: loc.latitude,
+                longitude: loc.longitude
+            ))
         }
     }
 }

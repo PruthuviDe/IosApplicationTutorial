@@ -299,6 +299,14 @@ struct TapFrenzyView: View {
                     } else {
                         isNewHighScore = false
                     }
+                    // Save game session to history
+                    let loc = LocationService.shared.coordinate
+                    SessionStore.shared.save(session: GameSession(
+                        mode: .tapFrenzy,
+                        score: score,
+                        latitude: loc.latitude,
+                        longitude: loc.longitude
+                    ))
                 }
             }
 

@@ -159,10 +159,17 @@ struct LightItUpView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(Color.black)
             .onAppear {
-
                 if score > highScore {
                     highScore = score
                 }
+                // Save game session to history
+                let loc = LocationService.shared.coordinate
+                SessionStore.shared.save(session: GameSession(
+                    mode: .lightItUp,
+                    score: score,
+                    latitude: loc.latitude,
+                    longitude: loc.longitude
+                ))
             }
 
         } else {
