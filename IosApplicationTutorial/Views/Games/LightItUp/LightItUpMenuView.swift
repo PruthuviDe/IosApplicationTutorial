@@ -6,74 +6,101 @@ struct LightItUpMenuView: View {
 
     var body: some View {
 
-        VStack(spacing: 24) {
+        ZStack {
+            RadialGradient(
+                colors: [Color(red: 0.20, green: 0.83, blue: 0.95).opacity(0.18), Color.black],
+                center: .top,
+                startRadius: 10,
+                endRadius: 400
+            )
+            .ignoresSafeArea()
 
-            Spacer()
+            VStack(spacing: 24) {
 
-            Image(systemName: "lightbulb.fill")
-                .font(.system(size: 64))
-                .foregroundColor(.cyan)
+                Spacer()
 
-            Text("Light It Up")
-                .font(.largeTitle)
-                .fontWeight(.bold)
-                .foregroundColor(.white)
+                Image("light_it_up")
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+                    .frame(width: 80, height: 80)
+                    .cornerRadius(18)
+                    .shadow(color: Color(red: 0.20, green: 0.83, blue: 0.95).opacity(0.35), radius: 12)
 
-            
-            Text("""
-            How to Play
-
-            • Tap the glowing card before it goes dark.
-            • Earn points for every correct tap.
-            • Missing a glowing card or tapping the wrong card costs a life.
-            """)
-            .font(.subheadline)
-            .foregroundColor(.white.opacity(0.7))
-            .multilineTextAlignment(.leading)
-
-            // Round length picker (absorbed from SettingsView)
-            VStack(alignment: .leading, spacing: 8) {
-                Text("ROUND LENGTH")
-                    .font(.caption)
-                    .fontWeight(.semibold)
-                    .foregroundColor(.cyan)
-
-                Picker("Round Length", selection: $roundLength) {
-                    Text("30s").tag(30)
-                    Text("60s").tag(60)
-                    Text("90s").tag(90)
-                }
-                .pickerStyle(.segmented)
-            }
-            .padding()
-            .background(Color.white.opacity(0.07))
-            .cornerRadius(12)
-
-            Spacer()
-
-            NavigationLink(destination: LightItUpView()) {
-                Text("Start Game")
-                    .font(.title2)
-                    .fontWeight(.bold)
+                Text("Light It Up")
+                    .font(.system(size: 32, weight: .black, design: .rounded))
                     .foregroundColor(.white)
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(Color.cyan)
-                    .cornerRadius(12)
-            }
+                    .tracking(0.5)
 
-            Spacer()
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("HOW TO PLAY")
+                        .font(.system(size: 11, weight: .bold))
+                        .foregroundColor(Color(red: 0.20, green: 0.83, blue: 0.95))
+                        .tracking(1)
+
+                    Text("• Tap the glowing card before it goes dark.\n• Earn points for every correct tap.\n• Missing a card or tapping the wrong card costs a life.")
+                        .font(.system(size: 13, weight: .medium, design: .rounded))
+                        .foregroundColor(.white.opacity(0.7))
+                        .lineSpacing(6)
+                }
+                .padding(20)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(Color.white.opacity(0.04))
+                .cornerRadius(16)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16)
+                        .stroke(Color.white.opacity(0.08), lineWidth: 1)
+                )
+
+                VStack(alignment: .leading, spacing: 10) {
+                    Text("ROUND LENGTH")
+                        .font(.system(size: 11, weight: .bold))
+                        .foregroundColor(Color(red: 0.20, green: 0.83, blue: 0.95))
+                        .tracking(1)
+
+                    Picker("Round Length", selection: $roundLength) {
+                        Text("30s").tag(30)
+                        Text("60s").tag(60)
+                        Text("90s").tag(90)
+                    }
+                    .pickerStyle(.segmented)
+                }
+                .padding(16)
+                .background(Color.white.opacity(0.04))
+                .cornerRadius(16)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16)
+                        .stroke(Color.white.opacity(0.08), lineWidth: 1)
+                )
+
+                Spacer()
+
+                NavigationLink(destination: LightItUpView()) {
+                    HStack(spacing: 8) {
+                        Image(systemName: "play.fill")
+                        Text("START GAME")
+                    }
+                    .font(.system(size: 16, weight: .bold, design: .rounded))
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 44)
+                    .padding(.vertical, 14)
+                    .background(Color(red: 0.20, green: 0.83, blue: 0.95))
+                    .cornerRadius(24)
+                    .shadow(color: Color(red: 0.20, green: 0.83, blue: 0.95).opacity(0.30), radius: 10)
+                }
+                .padding(.bottom, 20)
+
+                Spacer()
+            }
+            .padding(.horizontal, 28)
         }
-        .padding(.horizontal, 32)
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(
             LinearGradient(
-                colors: [Color.black, Color.cyan.opacity(0.4)],
+                colors: [Color(red: 0.07, green: 0.08, blue: 0.10), Color.black],
                 startPoint: .top,
                 endPoint: .bottom
             )
         )
-        .ignoresSafeArea()
+        .toolbar(.hidden, for: .tabBar)
     }
 }
 
