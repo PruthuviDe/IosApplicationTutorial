@@ -8,399 +8,304 @@ struct TapFrenzyView: View {
     @AppStorage("tapFrenzyHighScore") private var highScore = 0
     @State private var comboMultiplier = 1
     @State private var lastTapTime = Date()
-    @State private var buttonType = 0
+    @State private var buttonType = 0       // 0 = normal, 1 = bonus, 2 = trap
     @State private var gameStarted = false
-
-    @State private var scoreScale = 1.0
-    @State private var timerPulse = false
     @State private var isNewHighScore = false
-    @State private var glowExpand = false
 
     @State private var buttonOffsetX = 0.0
     @State private var buttonOffsetY = 0.0
 
     @State private var isBonusBurst = false
+    @State private var bonusBurstStart = 5
 
-    // Countdown timer
-    let timer = Timer.publish(
-        every: 1,
-        on: .main,
-        in: .common
-    ).autoconnect()
+    @State private var buttonPressed = false
 
-    // Changes button
-    let colourTimer = Timer.publish(
-        every: 2.5,
-        on: .main,
-        in: .common
-    ).autoconnect()
+    let timer = Timer.publish(every: 1.0, on: .main, in: .common).autoconnect()
 
-    // Moving Target
-    let moveTimer = Timer.publish(
-        every: 2,
-        on: .main,
-        in: .common
-    ).autoconnect()
+    var activeColor: Color {
+        if buttonType == 1 { return Color(red: 0.20, green: 0.83, blue: 0.52) }
+        if buttonType == 2 { return Color(red: 0.65, green: 0.68, blue: 0.80) }
+        return Color(red: 0.92, green: 0.26, blue: 0.35)
+    }
 
     var body: some View {
 
-        if timeRemaining == 0 {
+        Group {
 
-
-            VStack(spacing: 25) {
-
-                Spacer()
-
-                Text("GAME OVER")
-                    .font(.system(size: 44, weight: .heavy))
-                    .foregroundColor(.white)
-                    .shadow(color: .white.opacity(0.2), radius: 10)
-
-                if isNewHighScore {
-                    Label(
-                        "NEW HIGH SCORE!",
-                        systemImage: "crown.fill"
-                    )
-                    .font(.title2)
-                    .fontWeight(.heavy)
-                    .foregroundColor(.yellow)
-                    .shadow(color: .yellow.opacity(0.6), radius: 12)
-                }
-
-                Rectangle()
-                    .frame(width: 100, height: 3)
-                    .foregroundColor(.white.opacity(0.25))
-                    .cornerRadius(2)
-                    .padding(.vertical, 4)
-
-                HStack(spacing: 12) {
-
-                    Image(systemName: "trophy.fill")
-                        .foregroundColor(.yellow)
-                        .font(.system(size: 30))
-
-                    Text("Score: \(score)")
-                        .foregroundColor(.white)
-                        .font(.system(size: 30, weight: .bold))
-                }
-
-                HStack(spacing: 12) {
-
-                    Image(systemName: "star.fill")
-                        .foregroundColor(.yellow)
-                        .font(.system(size: 22))
-
-                    Text("High Score: \(highScore)")
-                        .foregroundColor(.white.opacity(0.8))
-                        .font(.system(size: 22, weight: .semibold))
-                }
-
-                Button(action: {
-                    restartGame()
-                }) {
-                    HStack(spacing: 8) {
-                        Image(systemName: "arrow.counterclockwise")
-                        Text("PLAY AGAIN")
-                    }
-                    .font(.title2)
-                    .fontWeight(.bold)
-                    .padding(.horizontal, 30)
-                    .padding(.vertical, 14)
-                    .background(Color(red: 0.85, green: 0.1, blue: 0.05))
-                    .foregroundColor(.white)
-                    .clipShape(Capsule())
-                    .shadow(color: Color(red: 0.85, green: 0.1, blue: 0.05).opacity(0.6), radius: 12)
-                }
-                .padding(.top, 10)
-
-                Spacer()
-            }
-            .frame(
-                maxWidth: .infinity,
-                maxHeight: .infinity
-            )
-            .background(
-                LinearGradient(
-                    colors: [
-                        Color.black,
-                        Color(red: 0.4, green: 0.0, blue: 0.05),
-                        Color.orange.opacity(0.6)
-                    ],
-                    startPoint: .top,
-                    endPoint: .bottom
-                )
-            )
-            .ignoresSafeArea(.all, edges: .top)
-
-        } else {
-
-            VStack(spacing: 0) {
-
-                Text("TAP FRENZY")
-                    .font(.system(size: 32, weight: .heavy))
-                    .foregroundColor(.white)
-                    .padding(.top, 60)
-                    .padding(.bottom, 8)
-
-                HStack {
-
-                    HStack(spacing: 6) {
-                        Image(systemName: "trophy.fill")
-                            .foregroundColor(.yellow)
-                        Text("\(score)")
-                            .fontWeight(.bold)
-                            .scaleEffect(scoreScale)
-                    }
-                    .font(.title2)
-                    .foregroundColor(.white)
+            if timeRemaining == 0 {
+                VStack(spacing: 24) {
 
                     Spacer()
 
-                    HStack(spacing: 6) {
-                        Image(systemName: "timer")
-                            .foregroundColor(timeRemaining <= 3 ? .red : .white)
-                        Text("\(timeRemaining)s")
-                            .fontWeight(.bold)
-                            .foregroundColor(timeRemaining <= 3 ? .red : .white)
-                            .scaleEffect(timerPulse && timeRemaining <= 3 ? 1.3 : 1.0)
-                    }
-                    .font(.title2)
-                }
-                .padding(.horizontal, 24)
-                .padding(.bottom, 8)
-
-                if comboMultiplier > 1 {
-                    Label("x\(comboMultiplier) COMBO!", systemImage: "bolt.fill")
-                        .font(.system(size: 22, weight: .heavy))
-                        .foregroundColor(.yellow)
-                        .padding(.bottom, 4)
-                }
-
-                if isBonusBurst {
-                    Label("BONUS BURST! x2 POINTS!", systemImage: "flame.fill")
-                        .font(.system(size: 18, weight: .heavy))
-                        .foregroundColor(.yellow)
-                        .padding(.bottom, 4)
-                }
-
-                if buttonType == 1 {
-                    Label("BONUS: +3 per tap", systemImage: "star.fill")
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundColor(.green)
-                        .padding(.bottom, 4)
-                } else if buttonType == 2 {
-                    Label("TRAP: -1 per tap", systemImage: "exclamationmark.triangle.fill")
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundColor(.orange)
-                        .padding(.bottom, 4)
-                } else {
-                    Label("NORMAL: +\(comboMultiplier) per tap", systemImage: "circle.fill")
-                        .font(.subheadline.weight(.semibold))
+                    Text("GAME OVER")
+                        .font(.system(size: 28, weight: .bold, design: .rounded))
                         .foregroundColor(.white.opacity(0.6))
-                        .padding(.bottom, 4)
-                }
+                        .tracking(2)
 
-                if !gameStarted {
-                    Label("Tap to Begin", systemImage: "hand.tap.fill")
-                        .font(.subheadline)
-                        .foregroundColor(.white.opacity(0.7))
-                        .padding(.bottom, 4)
-                }
+                    VStack(spacing: 4) {
+                        Text("\(score)")
+                            .font(.system(size: 80, weight: .black, design: .rounded))
+                            .foregroundColor(.white)
+                        Text("POINTS")
+                            .font(.system(size: 12, weight: .bold))
+                            .foregroundColor(.white.opacity(0.4))
+                            .tracking(1)
+                    }
 
-                Spacer()
+                    if isNewHighScore {
+                        HStack(spacing: 6) {
+                            Image(systemName: "crown.fill")
+                                .foregroundColor(.yellow)
+                            Text("NEW HIGH SCORE!")
+                                .font(.system(size: 14, weight: .bold, design: .rounded))
+                                .foregroundColor(.yellow)
+                        }
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 6)
+                        .background(Color.yellow.opacity(0.1))
+                        .cornerRadius(12)
+                    } else {
+                        HStack(spacing: 4) {
+                            Image(systemName: "trophy.fill")
+                                .foregroundColor(.white.opacity(0.4))
+                            Text("Best: \(highScore)")
+                                .font(.system(size: 16, weight: .semibold, design: .rounded))
+                                .foregroundColor(.white.opacity(0.6))
+                        }
+                    }
 
-                Button(action: {
-                    handleTap()
-                }) {
-                    Text("TAP!!")
-                        .font(.system(size: 46, weight: .black))
-                        .foregroundColor(.white)
-                        .frame(width: 220, height: 220)
-                    .background(
-                        buttonType == 1 ? Color.green :
-                        buttonType == 2 ? Color.gray :
-                        Color(red: 0.85, green: 0.1, blue: 0.05)
-                    )
-                    .clipShape(Circle())
-                    .overlay(
-                        Circle()
-                            .stroke(
-                                buttonType == 1 ? Color.green.opacity(0.3) :
-                                buttonType == 2 ? Color.gray.opacity(0.3) :
-                                Color.orange.opacity(0.4),
-                                lineWidth: 3
-                            )
-                            .scaleEffect(glowExpand ? 1.4 : 1.05)
-                            .opacity(glowExpand ? 0.0 : 0.8)
-                    )
-                    .shadow(
-                        color:
-                            buttonType == 1 ? .green :
-                            buttonType == 2 ? .gray :
-                            Color(red: 0.85, green: 0.1, blue: 0.05),
-                        radius: 20
-                    )
+                    Spacer()
+
+                    VStack(spacing: 14) {
+                        ShareLink(item: "I just scored \(score) on Tap Frenzy in PlayHub — beat that! 🎮") {
+                            Label("Share Score", systemImage: "square.and.arrow.up")
+                                .font(.system(size: 15, weight: .semibold, design: .rounded))
+                                .foregroundColor(Color(red: 0.92, green: 0.26, blue: 0.35))
+                                .padding(.horizontal, 32)
+                                .padding(.vertical, 12)
+                                .background(Color(red: 0.92, green: 0.26, blue: 0.35).opacity(0.12))
+                                .cornerRadius(20)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 20)
+                                        .stroke(Color(red: 0.92, green: 0.26, blue: 0.35).opacity(0.30), lineWidth: 1)
+                                )
+                        }
+
+                        Button(action: { restartGame() }) {
+                            Text("PLAY AGAIN")
+                                .font(.system(size: 16, weight: .bold, design: .rounded))
+                                .foregroundColor(.white)
+                                .padding(.horizontal, 40)
+                                .padding(.vertical, 14)
+                                .background(Color(red: 0.92, green: 0.26, blue: 0.35))
+                                .cornerRadius(24)
+                        }
+                    }
+                    .padding(.bottom, 40)
                 }
-                .offset(x: buttonOffsetX, y: buttonOffsetY)
-                .scaleEffect(0.4 + (Double(timeRemaining) / 10.0 * 0.6))
-                .animation(.easeInOut(duration: 0.8), value: timeRemaining)
-                .onAppear {
-                    withAnimation(
-                        .easeOut(duration: 1.8)
-                        .repeatForever(autoreverses: false)
-                    ) {
-                        glowExpand = true
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background(
+                    LinearGradient(
+                        colors: [Color(red: 0.08, green: 0.02, blue: 0.02), Color.black],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                )
+                .ignoresSafeArea(.all, edges: .top)
+
+            } else {
+                ZStack {
+                    RadialGradient(
+                        colors: [activeColor.opacity(0.30), Color.black],
+                        center: .center,
+                        startRadius: 10,
+                        endRadius: 360
+                    )
+                    .ignoresSafeArea()
+                    .animation(.easeInOut(duration: 0.5), value: buttonType)
+
+                    VStack(spacing: 20) {
+
+                        HStack {
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("SCORE")
+                                    .font(.system(size: 11, weight: .bold))
+                                    .foregroundColor(.white.opacity(0.4))
+                                Text("\(score)")
+                                    .font(.system(size: 32, weight: .black, design: .rounded))
+                                    .foregroundColor(.white)
+                            }
+
+                            Spacer()
+
+                            VStack(alignment: .trailing, spacing: 4) {
+                                Text("TIME")
+                                    .font(.system(size: 11, weight: .bold))
+                                    .foregroundColor(.white.opacity(0.4))
+                                Text("\(timeRemaining)s")
+                                    .font(.system(size: 32, weight: .black, design: .rounded))
+                                    .foregroundColor(timeRemaining <= 3 ? Color(red: 0.92, green: 0.26, blue: 0.35) : .white)
+                                    .scaleEffect(timeRemaining <= 3 ? 1.25 : 1.0)
+                            }
+                        }
+                        .padding(.horizontal, 24)
+                        .padding(.top, 16)
+
+                        VStack(spacing: 6) {
+                            if comboMultiplier > 1 {
+                                HStack(spacing: 4) {
+                                    Image(systemName: "bolt.fill")
+                                        .font(.system(size: 14))
+                                    Text("\(comboMultiplier)x Combo Active")
+                                }
+                                .font(.system(size: 18, weight: .bold, design: .rounded))
+                                .foregroundColor(.yellow)
+                                .shadow(color: .yellow.opacity(0.3), radius: 8)
+                            }
+                            
+                            if isBonusBurst {
+                                HStack(spacing: 4) {
+                                    Image(systemName: "sparkles")
+                                        .font(.system(size: 12))
+                                    Text("Double Points Active")
+                                }
+                                .font(.system(size: 13, weight: .bold, design: .rounded))
+                                .foregroundColor(Color(red: 0.20, green: 0.83, blue: 0.52))
+                                .shadow(color: Color(red: 0.20, green: 0.83, blue: 0.52).opacity(0.3), radius: 8)
+                            }
+                        }
+                        .frame(height: 55)
+
+                        Spacer()
+
+                        Button(action: { handleTap() }) {
+                            ZStack {
+                                Circle()
+                                    .fill(activeColor)
+                                    .shadow(color: activeColor.opacity(0.4), radius: 20)
+
+                                VStack(spacing: 2) {
+                                    if !gameStarted {
+                                        Text("START")
+                                            .font(.system(size: 26, weight: .bold, design: .rounded))
+                                    } else {
+                                        Text(buttonType == 1 ? "BONUS" : buttonType == 2 ? "TRAP" : "NORMAL")
+                                            .font(.system(size: 24, weight: .black, design: .rounded))
+                                        
+                                        Text(buttonType == 1 ? "+3" : buttonType == 2 ? "-1" : "+\(comboMultiplier)")
+                                            .font(.system(size: 15, weight: .bold, design: .rounded))
+                                            .foregroundColor(.white.opacity(0.8))
+                                    }
+                                }
+                                .foregroundColor(.white)
+                            }
+                            .frame(width: 220, height: 220)
+                        }
+                        .scaleEffect(buttonPressed ? 0.88 : 1.0)
+                        .animation(.spring(response: 0.2, dampingFraction: 0.5), value: buttonPressed)
+                        .offset(x: buttonOffsetX, y: buttonOffsetY)
+                        .scaleEffect(0.6 + (Double(timeRemaining) / 10.0 * 0.4))
+                        .animation(.spring(response: 0.35, dampingFraction: 0.5), value: timeRemaining)
+
+                        Spacer()
                     }
                 }
-
-                Spacer()
-
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(
-                LinearGradient(
-                    colors: [
-                        Color.black,
-                        Color(red: 0.4, green: 0.0, blue: 0.05),
-                        Color.orange.opacity(0.6)
-                    ],
-                    startPoint: .top,
-                    endPoint: .bottom
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background(
+                    LinearGradient(
+                        colors: [Color(red: 0.07, green: 0.08, blue: 0.10), Color.black],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                    .ignoresSafeArea(.all)
                 )
-            )
-            .ignoresSafeArea(.all, edges: .top)
 
-            .onReceive(timer) { _ in
+                .onReceive(timer) { _ in
+                    guard gameStarted && timeRemaining > 0 else { return }
 
-                if gameStarted && timeRemaining > 0 {
                     timeRemaining -= 1
 
-                    if timeRemaining == 7 {
-                        isBonusBurst = true
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                            isBonusBurst = false
-                        }
-                    }
-
-                    if timeRemaining <= 3 && !timerPulse {
-                        withAnimation(
-                            .easeInOut(duration: 0.5)
-                            .repeatForever(autoreverses: true)
-                        ) {
-                            timerPulse = true
-                        }
-                    }
-                }
-
-                if timeRemaining == 0 {
-                    if score > highScore {
-                        highScore = score
-                        isNewHighScore = true
-                    } else {
-                        isNewHighScore = false
-                    }
-                    // Save game session to history
-                    let loc = LocationService.shared.coordinate
-                    SessionStore.shared.save(session: GameSession(
-                        mode: .tapFrenzy,
-                        score: score,
-                        latitude: loc.latitude,
-                        longitude: loc.longitude
-                    ))
-                }
-            }
-
-            .onReceive(colourTimer) { _ in
-
-                if gameStarted {
                     buttonType = Int.random(in: 0...2)
-                }
-            }
+                    withAnimation(.easeInOut(duration: 0.30)) {
+                        buttonOffsetX = Double.random(in: -75...75)
+                        buttonOffsetY = Double.random(in: -45...180)
+                    }
 
-            .onReceive(moveTimer) { _ in
-
-                if gameStarted {
-                    withAnimation(.easeInOut(duration: 0.25)) {
-                        buttonOffsetX = Double.random(in: -80...80)
-                        buttonOffsetY = Double.random(in: -150...150)
+                    if Date().timeIntervalSince(lastTapTime) > 1.0 {
+                        comboMultiplier = 1
+                    }
+                    if timeRemaining == bonusBurstStart     { isBonusBurst = true }
+                    if timeRemaining == bonusBurstStart - 2 { isBonusBurst = false }
+                    if timeRemaining == 0 {
+                        if score > highScore {
+                            highScore = score
+                            isNewHighScore = true
+                        } else {
+                            isNewHighScore = false
+                        }
+                        let loc = LocationService.shared.coordinate
+                        SessionStore.shared.save(session: GameSession(
+                            mode: .tapFrenzy,
+                            score: score,
+                            latitude: loc.latitude,
+                            longitude: loc.longitude
+                        ))
                     }
                 }
             }
+
         }
+        .toolbar(.hidden, for: .tabBar)
     }
 
     func handleTap() {
-
         if !gameStarted {
             gameStarted = true
+            bonusBurstStart = Int.random(in: 4...8)
+        }
+        buttonPressed = true
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.12) {
+            buttonPressed = false
         }
 
         let now = Date()
-
-
-        if now.timeIntervalSince(lastTapTime) < 0.5 {
+        if now.timeIntervalSince(lastTapTime) < 0.8 {
             comboMultiplier += 1
         } else {
             comboMultiplier = 1
         }
-
         lastTapTime = now
 
+        var gained = 0
         if buttonType == 1 {
-
-            score += isBonusBurst ? 6 : 3
-
+            gained = (isBonusBurst ? 6 : 3) * comboMultiplier
+            score += gained
         } else if buttonType == 2 {
-
-            score = max(0, score - 1)
-
+            gained = -1 * comboMultiplier
+            score = max(0, score + gained)
             comboMultiplier = 1
-
         } else {
-
-            score += isBonusBurst ? comboMultiplier * 2 : comboMultiplier
-        }
-
-        withAnimation(.spring(response: 0.2, dampingFraction: 0.5)) {
-            scoreScale = 1.4
-        }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
-            withAnimation(.spring(response: 0.3, dampingFraction: 0.4)) {
-                scoreScale = 1.0
-            }
+            gained = isBonusBurst ? comboMultiplier * 2 : comboMultiplier
+            score += gained
         }
     }
 
-
     func restartGame() {
-
         score = 0
         timeRemaining = 10
         comboMultiplier = 1
         lastTapTime = Date()
         buttonType = 0
         gameStarted = false
-
-        scoreScale = 1.0
-        timerPulse = false
         isNewHighScore = false
-        glowExpand = false
+        isBonusBurst = false
+        bonusBurstStart = 5
         buttonOffsetX = 0.0
         buttonOffsetY = 0.0
-        isBonusBurst = false
-
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-            withAnimation(
-                .easeOut(duration: 1.8)
-                .repeatForever(autoreverses: false)
-            ) {
-                glowExpand = true
-            }
-        }
+        buttonPressed = false
     }
 }
 
 #Preview {
     TapFrenzyView()
 }
-

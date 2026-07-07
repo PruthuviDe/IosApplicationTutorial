@@ -37,8 +37,15 @@ struct QuizView: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color.black)
+        .background(
+            LinearGradient(
+                colors: [Color(red: 0.07, green: 0.08, blue: 0.10), Color.black],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+        )
         .overlay(flashColor.ignoresSafeArea().allowsHitTesting(false))
+        .toolbar(.hidden, for: .tabBar)
 
         .task {
             await viewModel.load()
@@ -61,7 +68,7 @@ struct QuizView: View {
             } else {
                 isAnswering = true
                 withAnimation(.easeIn(duration: 0.15)) {
-                    flashColor = Color.red.opacity(0.35)
+                    flashColor = Color.red.opacity(0.20)
                 }
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                     withAnimation { flashColor = .clear }
@@ -75,32 +82,32 @@ struct QuizView: View {
     var timerColor: Color {
         guard timerSeconds > 0 else { return .clear }
         let ratio = Double(timeRemaining) / Double(timerSeconds)
-        if ratio > 0.5 { return .green }
-        if ratio > 0.25 { return .orange }
-        return .red
+        if ratio > 0.5 { return Color(red: 0.20, green: 0.83, blue: 0.52) } 
+        if ratio > 0.25 { return Color(red: 0.95, green: 0.60, blue: 0.20) }
+        return Color(red: 0.92, green: 0.26, blue: 0.35)
     }
 
     func answerBackground(for answer: String) -> Color {
-        guard let reveal = revealAnswers else { return Color.white.opacity(0.1) }
-        if answer == reveal.correct  { return Color.green.opacity(0.25) }
-        if answer == reveal.selected { return Color.red.opacity(0.25) }
-        return Color.white.opacity(0.04)
+        guard let reveal = revealAnswers else { return Color.white.opacity(0.04) }
+        if answer == reveal.correct  { return Color.green.opacity(0.16) }
+        if answer == reveal.selected { return Color.red.opacity(0.16) }
+        return Color.white.opacity(0.02)
     }
 
     func answerBorderColor(for answer: String) -> Color {
-        guard let reveal = revealAnswers else { return Color.purple.opacity(0.6) }
-        if answer == reveal.correct  { return Color.green }
-        if answer == reveal.selected { return Color.red }
-        return Color.gray.opacity(0.3)
+        guard let reveal = revealAnswers else { return Color.white.opacity(0.18) }
+        if answer == reveal.correct  { return Color.green.opacity(0.6) }
+        if answer == reveal.selected { return Color.red.opacity(0.6) }
+        return Color.white.opacity(0.08)
     }
 
     var loadingView: some View {
-
         VStack(spacing: 20) {
             ProgressView()
                 .scaleEffect(1.5)
-                .tint(.purple)
+                .tint(Color(red: 0.65, green: 0.35, blue: 0.95))
             Text("Loading Questions...")
+                .font(.system(size: 15, weight: .medium, design: .rounded))
                 .foregroundColor(.white.opacity(0.6))
         }
     }
@@ -112,15 +119,14 @@ struct QuizView: View {
 
             Image(systemName: "wifi.slash")
                 .font(.system(size: 60))
-                .foregroundColor(.red)
+                .foregroundColor(Color(red: 0.92, green: 0.26, blue: 0.35))
 
             Text("Could not load questions")
-                .font(.title2)
-                .fontWeight(.bold)
+                .font(.system(size: 20, weight: .bold, design: .rounded))
                 .foregroundColor(.white)
 
             Text("Check your internet connection and try again.")
-                .font(.subheadline)
+                .font(.system(size: 14, weight: .medium, design: .rounded))
                 .foregroundColor(.white.opacity(0.5))
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 32)
@@ -128,12 +134,11 @@ struct QuizView: View {
             Button("Retry") {
                 Task { await viewModel.load() }
             }
-            .font(.title2)
-            .fontWeight(.bold)
+            .font(.system(size: 16, weight: .bold, design: .rounded))
             .foregroundColor(.white)
             .padding()
             .frame(maxWidth: .infinity)
-            .background(Color.purple)
+            .background(Color(red: 0.65, green: 0.35, blue: 0.95))
             .cornerRadius(12)
             .padding(.horizontal, 32)
 
@@ -143,59 +148,80 @@ struct QuizView: View {
 
     var questionView: some View {
         VStack(spacing: 20) {
-            HStack {
-
-                Text("\(viewModel.currentIndex + 1) of \(viewModel.questions.count)")
-                    .font(.headline)
-                    .foregroundColor(.purple)
+            
+            HStack(alignment: .top) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("SCORE")
+                        .font(.system(size: 11, weight: .bold))
+                        .foregroundColor(.white.opacity(0.4))
+                    Text("\(viewModel.score)")
+                        .font(.system(size: 32, weight: .black, design: .rounded))
+                        .foregroundColor(.white)
+                }
+                .frame(width: 80, alignment: .leading)
 
                 Spacer()
 
-                if viewModel.streak > 0 {
-                    HStack(spacing: 4) {
-                        Image(systemName: "flame.fill")
-                            .foregroundColor(.orange)
-                        Text("x\(viewModel.streak)")
-                            .fontWeight(.bold)
-                            .foregroundColor(.orange)
+                VStack {
+                    if viewModel.streak > 0 {
+                        HStack(spacing: 4) {
+                            Image(systemName: "flame.fill")
+                                .font(.system(size: 12))
+                            Text("\(viewModel.streak) streak")
+                        }
+                        .font(.system(size: 11, weight: .bold, design: .rounded))
+                        .foregroundColor(.orange)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 4)
+                        .background(Color.orange.opacity(0.12))
+                        .cornerRadius(8)
                     }
                 }
+                .frame(maxHeight: .infinity, alignment: .center)
+                .padding(.top, 4)
 
                 Spacer()
 
-                Text("Score: \(viewModel.score)")
-                    .fontWeight(.bold)
-                    .foregroundColor(.white)
+                VStack(alignment: .trailing, spacing: 4) {
+                    Text("QUESTION")
+                        .font(.system(size: 11, weight: .bold))
+                        .foregroundColor(.white.opacity(0.4))
+                    Text("\(viewModel.currentIndex + 1)/\(viewModel.questions.count)")
+                        .font(.system(size: 32, weight: .black, design: .rounded))
+                        .foregroundColor(.white)
+                }
+                .frame(width: 80, alignment: .trailing)
             }
             .padding(.horizontal, 24)
-            .padding(.top, 60)
+            .padding(.top, 16)
 
             if timerSeconds > 0 {
                 GeometryReader { geo in
                     ZStack(alignment: .leading) {
                         RoundedRectangle(cornerRadius: 4)
-                            .fill(Color.white.opacity(0.1))
+                            .fill(Color.white.opacity(0.08))
                         RoundedRectangle(cornerRadius: 4)
                             .fill(timerColor)
                             .frame(width: geo.size.width * CGFloat(timeRemaining) / CGFloat(timerSeconds))
-                            .animation(.linear(duration: 1), value: timeRemaining)
+                            .animation(.linear(duration: 1.0), value: timeRemaining)
                     }
                 }
-                .frame(height: 6)
+                .frame(height: 5)
                 .padding(.horizontal, 24)
             }
 
             Spacer()
 
             Text(viewModel.currentQuestion?.decodedQuestion ?? "")
-                .font(.title3)
-                .fontWeight(.semibold)
+                .font(.system(size: 19, weight: .semibold, design: .rounded))
                 .foregroundColor(.white)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 24)
                 .offset(x: shakeOffset)
 
             Spacer()
+                .frame(maxHeight: 24)
+
             VStack(spacing: 12) {
                 ForEach(currentAnswers, id: \.self) { answer in
                     Button {
@@ -207,7 +233,7 @@ struct QuizView: View {
 
                         if isCorrect {
                             withAnimation(.easeIn(duration: 0.15)) {
-                                flashColor = Color.green.opacity(0.35)
+                                flashColor = Color.green.opacity(0.20)
                             }
                             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                                 withAnimation { flashColor = .clear }
@@ -217,7 +243,7 @@ struct QuizView: View {
                             }
                         } else {
                             withAnimation(.easeIn(duration: 0.15)) {
-                                flashColor = Color.red.opacity(0.35)
+                                flashColor = Color.red.opacity(0.20)
                             }
                             withAnimation(.easeInOut(duration: 0.06).repeatCount(5, autoreverses: true)) {
                                 shakeOffset = 12
@@ -234,23 +260,24 @@ struct QuizView: View {
                         }
                     } label: {
                         Text(answer)
-                            .font(.body)
-                            .fontWeight(.semibold)
+                            .font(.system(size: 15, weight: .semibold, design: .rounded))
                             .foregroundColor(.white)
                             .multilineTextAlignment(.center)
                             .frame(maxWidth: .infinity)
-                            .padding()
+                            .padding(.vertical, 16)
+                            .padding(.horizontal, 16)
                             .background(answerBackground(for: answer))
-                            .cornerRadius(12)
+                            .cornerRadius(16)
                             .overlay(
-                                RoundedRectangle(cornerRadius: 12)
-                                    .stroke(answerBorderColor(for: answer), lineWidth: revealAnswers != nil ? 2 : 1)
+                                RoundedRectangle(cornerRadius: 16)
+                                    .stroke(answerBorderColor(for: answer), lineWidth: revealAnswers != nil ? 1.5 : 1)
                             )
                     }
                 }
             }
             .padding(.horizontal, 24)
-            .padding(.bottom, 40)
+            
+            Spacer()
         }
     }
 
@@ -260,41 +287,65 @@ struct QuizView: View {
             Spacer()
 
             Image(systemName: "star.fill")
-                .font(.system(size: 60))
+                .font(.system(size: 68))
                 .foregroundColor(.yellow)
+                .shadow(color: .yellow.opacity(0.4), radius: 15)
 
             Text("Quiz Complete!")
-                .font(.largeTitle)
-                .fontWeight(.bold)
+                .font(.system(size: 28, weight: .bold, design: .rounded))
                 .foregroundColor(.white)
+                .tracking(0.5)
 
-            Text("Final Score")
-                .foregroundColor(.white.opacity(0.6))
-            Text("\(viewModel.score)")
-                .font(.system(size: 64, weight: .heavy))
-                .foregroundColor(.purple)
-
-            Text("Best: \(highScore)")
-                .font(.headline)
-                .foregroundColor(.white.opacity(0.5))
-
-            Button("Play Again") {
-                viewModel.playAgain()
+            VStack(spacing: 4) {
+                Text("\(viewModel.score)")
+                    .font(.system(size: 80, weight: .black, design: .rounded))
+                    .foregroundColor(.white)
+                Text("FINAL SCORE")
+                    .font(.system(size: 12, weight: .bold))
+                    .foregroundColor(.white.opacity(0.4))
+                    .tracking(1)
             }
-            .font(.title2)
-            .fontWeight(.bold)
-            .foregroundColor(.white)
-            .padding()
-            .frame(maxWidth: .infinity)
-            .background(Color.purple)
-            .cornerRadius(12)
-            .padding(.horizontal, 32)
 
+            if viewModel.score > highScore {
+                HStack(spacing: 6) {
+                    Image(systemName: "crown.fill")
+                        .foregroundColor(.yellow)
+                    Text("NEW HIGH SCORE!")
+                        .font(.system(size: 14, weight: .bold, design: .rounded))
+                        .foregroundColor(.yellow)
+                }
+                .padding(.horizontal, 14)
+                .padding(.vertical, 6)
+                .background(Color.yellow.opacity(0.1))
+                .cornerRadius(12)
+            } else {
+                HStack(spacing: 4) {
+                    Image(systemName: "trophy.fill")
+                        .foregroundColor(.white.opacity(0.4))
+                    Text("Best: \(highScore)")
+                        .font(.system(size: 16, weight: .semibold, design: .rounded))
+                        .foregroundColor(.white.opacity(0.6))
+                }
+            }
+
+            Spacer()
+
+            Button(action: { viewModel.playAgain() }) {
+                Text("PLAY AGAIN")
+                    .font(.system(size: 16, weight: .bold, design: .rounded))
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 40)
+                    .padding(.vertical, 14)
+                    .background(Color(red: 0.65, green: 0.35, blue: 0.95))
+                    .cornerRadius(24)
+            }
+            
             ShareLink(item: "I just scored \(viewModel.score) on Quiz Rush in PlayHub — beat that! 🎮") {
                 Label("Share Score", systemImage: "square.and.arrow.up")
-                    .font(.subheadline)
-                    .foregroundColor(.purple)
+                    .font(.system(size: 14, weight: .bold, design: .rounded))
+                    .foregroundColor(Color(red: 0.65, green: 0.35, blue: 0.95))
             }
+            .padding(.bottom, 20)
 
             Spacer()
         }
@@ -302,7 +353,6 @@ struct QuizView: View {
             if viewModel.score > highScore {
                 highScore = viewModel.score
             }
-            // Save game session to history
             let loc = LocationService.shared.coordinate
             SessionStore.shared.save(session: GameSession(
                 mode: .quizRush,
@@ -313,6 +363,7 @@ struct QuizView: View {
         }
     }
 }
+
 #Preview {
     QuizView()
 }
