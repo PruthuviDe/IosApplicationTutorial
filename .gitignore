@@ -1,5 +1,6 @@
-# Markdown notes
+# Markdown notes (ignore lecture files but allow README)
 *.md
+!README.md
 
 # macOS
 .DS_Store
