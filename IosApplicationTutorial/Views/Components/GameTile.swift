@@ -1,26 +1,23 @@
 import SwiftUI
 
-struct GameTile: View {
+// MARK: - GameTile
+/// A home-screen game card that navigates to any game destination view.
+/// Uses a generic `Destination` parameter instead of `AnyView` type-erasure
+/// so SwiftUI can efficiently diff the view hierarchy.
+struct GameTile<Destination: View>: View {
 
-    let mode: GameMode
-    let destination: AnyView
-
-    var highScoreKey: String {
-        switch mode {
-        case .tapFrenzy: return "tapFrenzyHighScore"
-        case .lightItUp: return "lightItUpHighScore"
-        case .quizRush:  return "quizRushHighScore"
-        }
-    }
+    let mode:        GameMode
+    let destination: Destination
 
     var highScore: Int {
-        UserDefaults.standard.integer(forKey: highScoreKey)
+        UserDefaults.standard.integer(forKey: mode.highScoreKey)
     }
 
     var body: some View {
         NavigationLink(destination: destination) {
             HStack(spacing: 16) {
 
+                // Game artwork
                 Image(mode.imageName)
                     .resizable()
                     .aspectRatio(contentMode: .fill)
@@ -31,6 +28,7 @@ struct GameTile: View {
                             .stroke(mode.accentColor.opacity(0.25), lineWidth: 1.5)
                     )
 
+                // Title + subtitle
                 VStack(alignment: .leading, spacing: 4) {
                     Text(mode.rawValue)
                         .font(.system(size: 17, weight: .bold, design: .rounded))
@@ -43,6 +41,7 @@ struct GameTile: View {
 
                 Spacer()
 
+                // Chevron + best score
                 VStack(alignment: .trailing, spacing: 6) {
                     Image(systemName: "chevron.right")
                         .font(.system(size: 11, weight: .semibold))
@@ -78,10 +77,7 @@ struct GameTile: View {
 }
 
 #Preview {
-    GameTile(
-        mode: .tapFrenzy,
-        destination: AnyView(Text("Tap Frenzy View"))
-    )
-    .padding()
-    .background(Color.black)
+    GameTile(mode: .tapFrenzy, destination: Text("Tap Frenzy View"))
+        .padding()
+        .background(Color.black)
 }

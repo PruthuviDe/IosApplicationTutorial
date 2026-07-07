@@ -2,6 +2,8 @@ import SwiftUI
 
 struct HomeTab: View {
 
+    @AppStorage("playerName") private var playerName = "Player One"
+
     var body: some View {
 
         NavigationStack {
@@ -22,8 +24,8 @@ struct HomeTab: View {
                             Text("Welcome back,")
                                 .font(.system(size: 14, weight: .medium, design: .rounded))
                                 .foregroundColor(.white.opacity(0.40))
-                            
-                            Text("Player One")
+
+                            Text(playerName)
                                 .font(.system(size: 28, weight: .black, design: .rounded))
                                 .foregroundColor(.white)
                         }
@@ -34,7 +36,8 @@ struct HomeTab: View {
                             Circle()
                                 .fill(
                                     LinearGradient(
-                                        colors: [Color(red: 0.65, green: 0.35, blue: 0.95).opacity(0.20), Color(red: 0.65, green: 0.35, blue: 0.95).opacity(0.05)],
+                                        colors: [Color(red: 0.65, green: 0.35, blue: 0.95).opacity(0.20),
+                                                 Color(red: 0.65, green: 0.35, blue: 0.95).opacity(0.05)],
                                         startPoint: .topLeading,
                                         endPoint: .bottomTrailing
                                     )
@@ -66,18 +69,9 @@ struct HomeTab: View {
 
                     ScrollView(showsIndicators: false) {
                         VStack(spacing: 16) {
-                            GameTile(
-                                mode: .tapFrenzy,
-                                destination: AnyView(TapFrenzyView())
-                            )
-                            GameTile(
-                                mode: .lightItUp,
-                                destination: AnyView(LightItUpMenuView())
-                            )
-                            GameTile(
-                                mode: .quizRush,
-                                destination: AnyView(QuizMenuView())
-                            )
+                            GameTile(mode: .tapFrenzy, destination: TapFrenzyView())
+                            GameTile(mode: .lightItUp, destination: LightItUpMenuView())
+                            GameTile(mode: .quizRush,  destination: QuizMenuView())
                         }
                         .padding(.horizontal, 24)
                         .padding(.bottom, 24)

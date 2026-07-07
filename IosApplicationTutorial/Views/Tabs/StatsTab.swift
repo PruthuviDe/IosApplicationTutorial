@@ -3,7 +3,9 @@ import Charts
 
 struct StatsTab: View {
 
+    @StateObject private var vm    = StatsViewModel()
     @ObservedObject private var store = SessionStore.shared
+
 
     var body: some View {
         NavigationStack {

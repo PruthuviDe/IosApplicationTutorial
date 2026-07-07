@@ -3,9 +3,10 @@ import SwiftUI
 struct SettingsTab: View {
 
     @ObservedObject private var store = SessionStore.shared
+    @AppStorage("playerName")           private var playerName = "Player One"
     @AppStorage("notificationsEnabled") private var notificationsEnabled = false
-    @AppStorage("challengeHour") private var challengeHour = 9
-    @AppStorage("challengeMinute") private var challengeMinute = 0
+    @AppStorage("challengeHour")        private var challengeHour = 9
+    @AppStorage("challengeMinute")      private var challengeMinute = 0
     @State private var showResetConfirm = false
     @State private var challengeTime = Date()
 
@@ -40,6 +41,38 @@ struct SettingsTab: View {
 
                     ScrollView(showsIndicators: false) {
                         VStack(spacing: 24) {
+
+                            // PLAYER PROFILE CARD
+                            VStack(alignment: .leading, spacing: 14) {
+                                sectionHeader("PLAYER PROFILE")
+
+                                HStack {
+                                    Label("Display Name", systemImage: "person.fill")
+                                        .font(.system(size: 15, weight: .semibold, design: .rounded))
+                                        .foregroundColor(.white)
+                                    Spacer()
+                                    TextField("Your name", text: $playerName)
+                                        .font(.system(size: 15, weight: .medium, design: .rounded))
+                                        .foregroundColor(.white.opacity(0.7))
+                                        .multilineTextAlignment(.trailing)
+                                        .frame(maxWidth: 140)
+                                        .autocorrectionDisabled()
+                                }
+                                .padding(.vertical, 4)
+                            }
+                            .padding(16)
+                            .background(
+                                LinearGradient(
+                                    colors: [Color.white.opacity(0.08), Color.white.opacity(0.03)],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
+                            .cornerRadius(16)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 16)
+                                    .stroke(Color.white.opacity(0.12), lineWidth: 1)
+                            )
 
                             VStack(alignment: .leading, spacing: 14) {
                                 sectionHeader("DAILY CHALLENGE")

@@ -70,10 +70,13 @@ struct QuizView: View {
                 withAnimation(.easeIn(duration: 0.15)) {
                     flashColor = Color.red.opacity(0.20)
                 }
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                    withAnimation { flashColor = .clear }
-                    viewModel.answer("")
-                    isAnswering = false
+                Task {
+                    try? await Task.sleep(for: .seconds(0.5))
+                    await MainActor.run {
+                        withAnimation { flashColor = .clear }
+                        viewModel.answer("")
+                        isAnswering = false
+                    }
                 }
             }
         }
@@ -235,11 +238,14 @@ struct QuizView: View {
                             withAnimation(.easeIn(duration: 0.15)) {
                                 flashColor = Color.green.opacity(0.20)
                             }
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                                withAnimation { flashColor = .clear }
-                                shakeOffset = 0
-                                viewModel.answer(answer)
-                                isAnswering = false
+                            Task {
+                                try? await Task.sleep(for: .seconds(0.5))
+                                await MainActor.run {
+                                    withAnimation { flashColor = .clear }
+                                    shakeOffset = 0
+                                    viewModel.answer(answer)
+                                    isAnswering = false
+                                }
                             }
                         } else {
                             withAnimation(.easeIn(duration: 0.15)) {
@@ -249,13 +255,17 @@ struct QuizView: View {
                                 shakeOffset = 12
                             }
                             revealAnswers = (selected: answer, correct: correct ?? "")
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                                withAnimation { flashColor = .clear }
-                                shakeOffset = 0
-                            }
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-                                viewModel.answer(answer)
-                                isAnswering = false
+                            Task {
+                                try? await Task.sleep(for: .seconds(0.5))
+                                await MainActor.run {
+                                    withAnimation { flashColor = .clear }
+                                    shakeOffset = 0
+                                }
+                                try? await Task.sleep(for: .seconds(1.0))
+                                await MainActor.run {
+                                    viewModel.answer(answer)
+                                    isAnswering = false
+                                }
                             }
                         }
                     } label: {
