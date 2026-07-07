@@ -5,6 +5,15 @@ enum GameMode: String, Codable, CaseIterable {
     case lightItUp  = "Light It Up"
     case quizRush   = "Quiz Rush"
 
+    /// UserDefaults key for this mode's persisted high score.
+    var highScoreKey: String {
+        switch self {
+        case .tapFrenzy: return "tapFrenzyHighScore"
+        case .lightItUp: return "lightItUpHighScore"
+        case .quizRush:  return "quizRushHighScore"
+        }
+    }
+
     var icon: String {
         switch self {
         case .tapFrenzy: return "hand.tap.fill"
@@ -34,6 +43,15 @@ enum GameMode: String, Codable, CaseIterable {
         case .tapFrenzy: return "Tap fast, build combos"
         case .lightItUp: return "Find the glowing card"
         case .quizRush:  return "Answer trivia questions"
+        }
+    }
+
+    /// Dark background gradient start color used on the result screen.
+    var backgroundTopColor: Color {
+        switch self {
+        case .tapFrenzy: return Color(red: 0.08, green: 0.02, blue: 0.02)
+        case .lightItUp: return Color(red: 0.02, green: 0.07, blue: 0.08)
+        case .quizRush:  return Color(red: 0.04, green: 0.02, blue: 0.08)
         }
     }
 }
