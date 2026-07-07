@@ -5,43 +5,83 @@ struct GameTile: View {
     let mode: GameMode
     let destination: AnyView
 
+    var highScoreKey: String {
+        switch mode {
+        case .tapFrenzy: return "tapFrenzyHighScore"
+        case .lightItUp: return "lightItUpHighScore"
+        case .quizRush:  return "quizRushHighScore"
+        }
+    }
+
+    var highScore: Int {
+        UserDefaults.standard.integer(forKey: highScoreKey)
+    }
+
     var body: some View {
         NavigationLink(destination: destination) {
             HStack(spacing: 16) {
 
-                Image(systemName: mode.icon)
-                    .font(.system(size: 28))
-                    .foregroundColor(.white)
-                    .frame(width: 56, height: 56)
-                    .background(mode.accentColor.opacity(0.25))
+                Image(mode.imageName)
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+                    .frame(width: 52, height: 52)
                     .cornerRadius(14)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 14)
+                            .stroke(mode.accentColor.opacity(0.25), lineWidth: 1.5)
+                    )
 
                 VStack(alignment: .leading, spacing: 4) {
                     Text(mode.rawValue)
-                        .font(.title3)
-                        .fontWeight(.bold)
+                        .font(.system(size: 17, weight: .bold, design: .rounded))
                         .foregroundColor(.white)
 
                     Text(mode.subtitle)
-                        .font(.caption)
-                        .foregroundColor(.white.opacity(0.5))
+                        .font(.system(size: 12, weight: .medium, design: .rounded))
+                        .foregroundColor(.white.opacity(0.4))
                 }
 
                 Spacer()
 
-                Image(systemName: "chevron.right")
-                    .font(.caption)
-                    .foregroundColor(.white.opacity(0.3))
+                VStack(alignment: .trailing, spacing: 6) {
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 11, weight: .semibold))
+                        .foregroundColor(.white.opacity(0.25))
+
+                    Text("Best: \(highScore)")
+                        .font(.system(size: 10, weight: .bold, design: .rounded))
+                        .foregroundColor(mode.accentColor)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 3)
+                        .background(mode.accentColor.opacity(0.10))
+                        .cornerRadius(6)
+                }
             }
             .padding(16)
             .background(
-                RoundedRectangle(cornerRadius: 16)
-                    .fill(Color.white.opacity(0.07))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 16)
-                            .stroke(mode.accentColor.opacity(0.3), lineWidth: 1)
+                RoundedRectangle(cornerRadius: 18)
+                    .fill(
+                        LinearGradient(
+                            colors: [Color.white.opacity(0.08), Color.white.opacity(0.03)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
                     )
             )
+            .overlay(
+                RoundedRectangle(cornerRadius: 18)
+                    .stroke(Color.white.opacity(0.12), lineWidth: 1)
+            )
         }
+        .buttonStyle(PlainButtonStyle())
     }
+}
+
+#Preview {
+    GameTile(
+        mode: .tapFrenzy,
+        destination: AnyView(Text("Tap Frenzy View"))
+    )
+    .padding()
+    .background(Color.black)
 }
