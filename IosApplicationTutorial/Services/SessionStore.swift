@@ -20,11 +20,12 @@ class SessionStore: ObservableObject {
     func resetAll() {
         sessions = []
         persist()
-        // Also clear the individual per-game high scores stored by each
-        // game ViewModel via @AppStorage so the home-screen cards and
-        // in-game "Best:" labels both show 0 after a reset.
+        // Set each high-score key to 0 (not removeObject) so that
+        // @AppStorage property wrappers in the game ViewModels receive
+        // the KVO/UserDefaults change notification and update in memory.
+        // removeObject() does not reliably fire @AppStorage observers.
         for mode in GameMode.allCases {
-            UserDefaults.standard.removeObject(forKey: mode.highScoreKey)
+            UserDefaults.standard.set(0, forKey: mode.highScoreKey)
         }
     }
 
