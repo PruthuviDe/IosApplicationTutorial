@@ -7,8 +7,9 @@ enum PrimaryButtonStyleType {
 }
 
 // MARK: - PrimaryButton
-/// A highly polished, custom action button styled for GameVault.
-/// Supports filled (gradient + glow) and outlined (glassmorphic + accent border) styles.
+/// A premium, high-tech gaming button designed to match GameVault's dark theme.
+/// Replaces generic solid-color buttons with a dark-glass cyberpunk panel,
+/// featuring vibrant glowing neon borders, white titles, and tinted icons.
 struct PrimaryButton: View {
 
     let title: String
@@ -20,53 +21,60 @@ struct PrimaryButton: View {
         HStack(spacing: 10) {
             if let icon = icon {
                 Image(systemName: icon)
-                    .font(.system(size: 16, weight: .bold))
+                    .font(.system(size: 14, weight: .bold))
+                    .foregroundColor(color) // Tinted icon
             }
+            
             Text(title.uppercased())
-                .font(.system(size: 14, weight: .bold, design: .rounded))
-                .tracking(1.5)
+                .font(.system(size: 13, weight: .black, design: .rounded))
+                .foregroundColor(.white) // Always clean white text
+                .tracking(2.0) // Arcade character spacing
         }
-        .foregroundColor(style == .filled ? .white : color)
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 16)
+        .padding(.vertical, 15)
         .background(
-            Group {
+            ZStack {
+                // Cyberpunk dark carbon backplate
+                Color.black.opacity(0.65)
+                
                 if style == .filled {
-                    // Deep gaming gradient fill
+                    // Soft internal radial/linear glow
                     LinearGradient(
-                        colors: [color, color.opacity(0.70)],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
+                        colors: [color.opacity(0.15), color.opacity(0.02)],
+                        startPoint: .top,
+                        endPoint: .bottom
                     )
                 } else {
-                    // Dark translucent backdrop
-                    Color.white.opacity(0.04)
+                    // Translucent backing
+                    Color.white.opacity(0.02)
                 }
             }
         )
-        .cornerRadius(18)
+        .cornerRadius(12) // Sleek, modern corner radius instead of pill shape
         .overlay(
-            RoundedRectangle(cornerRadius: 18)
+            RoundedRectangle(cornerRadius: 12)
                 .stroke(
-                    style == .filled 
-                        ? LinearGradient(
-                            colors: [Color.white.opacity(0.35), Color.white.opacity(0.10)],
-                            startPoint: .top,
-                            endPoint: .bottom
-                          )
-                        : LinearGradient(
-                            colors: [color.opacity(0.40), color.opacity(0.15)],
-                            startPoint: .top,
-                            endPoint: .bottom
-                          ),
-                    lineWidth: 1.5
+                    LinearGradient(
+                        colors: style == .filled
+                            ? [color, color.opacity(0.40)]
+                            : [color.opacity(0.45), color.opacity(0.15)],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    ),
+                    lineWidth: style == .filled ? 2.0 : 1.2
                 )
         )
+        // High-tech subtle inner bezel highlight
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(Color.white.opacity(0.08), lineWidth: 1)
+                .padding(1)
+        )
         .shadow(
-            color: color.opacity(style == .filled ? 0.35 : 0.12),
-            radius: style == .filled ? 14 : 8,
+            color: color.opacity(style == .filled ? 0.35 : 0.08),
+            radius: style == .filled ? 12 : 6,
             x: 0,
-            y: style == .filled ? 6 : 3
+            y: style == .filled ? 4 : 2
         )
     }
 }
