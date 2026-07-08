@@ -32,7 +32,7 @@ struct ContentRoot: View {
                     Label("Settings", systemImage: "gearshape.fill")
                 }
         }
-        .tint(.purple)
+        .tint(.white)
         .preferredColorScheme(.dark)
         .onAppear {
             LocationService.shared.requestPermission()
