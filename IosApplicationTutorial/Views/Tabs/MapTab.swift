@@ -5,11 +5,13 @@ struct MapTab: View {
 
     @ObservedObject private var store = SessionStore.shared
     @State private var selectedSession: GameSession? = nil
+    @State private var cameraPosition: MapCameraPosition = .userLocation(fallback: .automatic)
 
     var body: some View {
         NavigationStack {
             ZStack {
                 if store.sessions.isEmpty {
+                    // ── Empty state ────────────────────────────────────────
                     ZStack {
                         RadialGradient(
                             colors: [Color(red: 0.65, green: 0.35, blue: 0.95).opacity(0.12), Color.black],
@@ -38,7 +40,7 @@ struct MapTab: View {
                                 Text("No locations yet")
                                     .font(.system(size: 18, weight: .bold, design: .rounded))
                                     .foregroundColor(.white)
-                                
+
                                 Text("Play a game to drop pins on your gaming map.")
                                     .font(.system(size: 13, weight: .medium, design: .rounded))
                                     .foregroundColor(.white.opacity(0.40))
@@ -54,13 +56,20 @@ struct MapTab: View {
                             endPoint: .bottom
                         )
                     )
+
                 } else {
-                    Map {
+                    // ── Map with session pins ──────────────────────────────
+                    Map(position: $cameraPosition) {
+
+                        // Blue pulsing dot showing the player's current position
+                        UserAnnotation()
+
+                        // One coloured pin per game session played
                         ForEach(store.sessions) { session in
                             Annotation(
                                 session.mode.rawValue,
                                 coordinate: CLLocationCoordinate2D(
-                                    latitude: session.latitude,
+                                    latitude:  session.latitude,
                                     longitude: session.longitude
                                 )
                             ) {
@@ -72,7 +81,7 @@ struct MapTab: View {
                                             .fill(session.mode.accentColor)
                                             .frame(width: 36, height: 36)
                                             .shadow(color: session.mode.accentColor.opacity(0.50), radius: 6)
-                                        
+
                                         Circle()
                                             .stroke(Color.white, lineWidth: 2)
                                             .frame(width: 36, height: 36)
@@ -86,6 +95,12 @@ struct MapTab: View {
                         }
                     }
                     .mapStyle(.standard(pointsOfInterest: .all, showsTraffic: false))
+                    .mapControls {
+                        // "Locate me" button — tapping re-centres on the user
+                        MapUserLocationButton()
+                        MapCompass()
+                        MapScaleView()
+                    }
                     .ignoresSafeArea(edges: .bottom)
                 }
             }
@@ -94,9 +109,15 @@ struct MapTab: View {
             .sheet(item: $selectedSession) { session in
                 SessionDetailSheet(session: session)
             }
+            .onAppear {
+                // Request/re-confirm location permission every time the tab opens
+                LocationService.shared.requestPermission()
+            }
         }
     }
 }
+
+// MARK: - Session Detail Sheet
 
 struct SessionDetailSheet: View {
 
