@@ -86,7 +86,8 @@ struct ResultView: View {
                 endPoint: .bottom
             )
         )
-        .ignoresSafeArea(.all, edges: .top)
+        .ignoresSafeArea(.all)
+        .toolbar(.hidden, for: .tabBar)
     }
 }
 
