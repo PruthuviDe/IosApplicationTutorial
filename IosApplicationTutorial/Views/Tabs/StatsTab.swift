@@ -197,7 +197,6 @@ struct StatsTab: View {
                                         )
                                     }
 
-                                    // Colour legend
                                     HStack(spacing: 16) {
                                         ForEach(GameMode.allCases, id: \.self) { mode in
                                             HStack(spacing: 6) {

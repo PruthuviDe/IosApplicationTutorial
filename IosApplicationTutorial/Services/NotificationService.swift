@@ -16,7 +16,7 @@ class NotificationService {
 
         let content = UNMutableNotificationContent()
         content.title = "Daily Challenge 🎮"
-        content.body = "Time to play! Open PlayHub and beat your high score."
+        content.body = "Time to play! Open GameVault and beat your high score."
         content.sound = .default
 
         var dateComponents = DateComponents()

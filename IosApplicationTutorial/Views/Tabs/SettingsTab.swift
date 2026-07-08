@@ -42,7 +42,6 @@ struct SettingsTab: View {
                     ScrollView(showsIndicators: false) {
                         VStack(spacing: 24) {
 
-                            // PLAYER PROFILE CARD
                             VStack(alignment: .leading, spacing: 14) {
                                 sectionHeader("PLAYER PROFILE")
 
@@ -130,7 +129,6 @@ struct SettingsTab: View {
                                     .stroke(Color.white.opacity(0.12), lineWidth: 1)
                             )
 
-                            // DATA GROUP CARD
                             VStack(alignment: .leading, spacing: 14) {
                                 sectionHeader("DATA & HISTORY")
 
@@ -188,7 +186,7 @@ struct SettingsTab: View {
                                 sectionHeader("ABOUT APP")
 
                                 HStack {
-                                    Label("PlayHub", systemImage: "gamecontroller.fill")
+                                    Label("GameVault", systemImage: "gamecontroller.fill")
                                         .font(.system(size: 15, weight: .semibold, design: .rounded))
                                         .foregroundColor(.white)
                                     Spacer()

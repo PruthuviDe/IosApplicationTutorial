@@ -1,4 +1,4 @@
-# PlayHub — iOS Gaming Hub
+# GameVault — iOS Gaming Hub
 
 > A polished, multi-game iOS application built with SwiftUI across 4 weeks of coursework.  
 > Tap Frenzy · Light It Up · Quiz Rush
@@ -20,7 +20,7 @@
 
 ## Overview
 
-PlayHub is a native iOS gaming hub that houses three distinct mini-games inside a unified, dark-themed shell application. The app integrates real device capabilities — CoreLocation, UserNotifications, MapKit, SwiftUI Charts, and a live REST API — into a cohesive, production-quality experience built entirely in SwiftUI.
+GameVault is a native iOS gaming hub that houses three distinct mini-games inside a unified, dark-themed shell application. The app integrates real device capabilities — CoreLocation, UserNotifications, MapKit, SwiftUI Charts, and a live REST API — into a cohesive, production-quality experience built entirely in SwiftUI.
 
 ---
 
@@ -42,7 +42,7 @@ PlayHub is a native iOS gaming hub that houses three distinct mini-games inside 
 
 ## Architecture
 
-PlayHub follows a strict **MVVM (Model-View-ViewModel)** architecture with services extracted into dedicated singleton classes.
+GameVault follows a strict **MVVM (Model-View-ViewModel)** architecture with services extracted into dedicated singleton classes.
 
 ```
 ┌─────────────────────────────────────────────────────┐
@@ -229,13 +229,13 @@ open IosApplicationTutorial.xcodeproj
 | **Location accuracy** | Uses `kCLLocationAccuracyHundredMeters` to preserve battery; pins may appear slightly offset |
 | **Session storage limit** | All sessions stored in UserDefaults — not suitable for very large volumes (1000+ sessions) |
 | **ViewModels scope** | Tap Frenzy and Light It Up manage game state via `@State` in the view, not a ViewModel |
-| **No user profile** | Player name is hardcoded as "Player One" — no profile or authentication system |
+| **No user profile** | Player name is editable in Settings and persists via `@AppStorage` — no authentication system |
 
 ---
 
 ## Reflection
 
-Building PlayHub across four weeks was a genuinely rewarding experience in scaling a SwiftUI codebase from a single-screen prototype into a multi-feature, platform-integrated app.
+Building GameVault across four weeks was a genuinely rewarding experience in scaling a SwiftUI codebase from a single-screen prototype into a multi-feature, platform-integrated app.
 
 **Week 1** established the importance of clean state management from the start — even a simple tap counter benefits from disciplined use of `@State` and `@AppStorage`. Adding combos and trap logic showed how quickly a simple mechanic can become interesting.
 

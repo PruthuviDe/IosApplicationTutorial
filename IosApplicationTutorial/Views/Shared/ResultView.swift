@@ -1,8 +1,5 @@
 import SwiftUI
 
-// MARK: - ResultView
-/// A shared game-over result screen used across all three game modes.
-/// Accepts the mode, score, and an action to restart the game.
 struct ResultView: View {
 
     let mode:       GameMode
@@ -16,13 +13,10 @@ struct ResultView: View {
 
             Spacer()
 
-            // Game over header
             Text("GAME OVER")
                 .font(.system(size: 28, weight: .bold, design: .rounded))
                 .foregroundColor(.white.opacity(0.6))
                 .tracking(2)
-
-            // Score display
             VStack(spacing: 4) {
                 Text("\(score)")
                     .font(.system(size: 80, weight: .black, design: .rounded))
@@ -33,7 +27,6 @@ struct ResultView: View {
                     .tracking(1)
             }
 
-            // New high score / best badge
             if isNewBest {
                 HStack(spacing: 6) {
                     Image(systemName: "crown.fill")
@@ -58,9 +51,8 @@ struct ResultView: View {
 
             Spacer()
 
-            // Action buttons
             VStack(spacing: 14) {
-                ShareLink(item: "I just scored \(score) on \(mode.rawValue) in PlayHub — beat that! 🎮") {
+                ShareLink(item: "I just scored \(score) on \(mode.rawValue) in GameVault — beat that! 🎮") {
                     Label("Share Score", systemImage: "square.and.arrow.up")
                         .font(.system(size: 15, weight: .semibold, design: .rounded))
                         .foregroundColor(mode.accentColor)

@@ -5,7 +5,6 @@ enum GameMode: String, Codable, CaseIterable {
     case lightItUp  = "Light It Up"
     case quizRush   = "Quiz Rush"
 
-    /// UserDefaults key for this mode's persisted high score.
     var highScoreKey: String {
         switch self {
         case .tapFrenzy: return "tapFrenzyHighScore"
@@ -46,7 +45,6 @@ enum GameMode: String, Codable, CaseIterable {
         }
     }
 
-    /// Dark background gradient start color used on the result screen.
     var backgroundTopColor: Color {
         switch self {
         case .tapFrenzy: return Color(red: 0.08, green: 0.02, blue: 0.02)

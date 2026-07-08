@@ -8,7 +8,6 @@ struct LightItUpView: View {
     var body: some View {
         Group {
             if vm.isGameOver {
-                // ── Game Over ──────────────────────────────────────────────
                 ResultView(
                     mode:      .lightItUp,
                     score:     vm.score,
@@ -19,9 +18,7 @@ struct LightItUpView: View {
                 .onAppear { vm.saveSession() }
 
             } else {
-                // ── Game Screen ────────────────────────────────────────────
                 ZStack {
-                    // Background glow changes colour with the level
                     RadialGradient(
                         colors: [vm.currentLevel.glowColor.opacity(0.20), Color.black],
                         center: .center,
@@ -33,7 +30,6 @@ struct LightItUpView: View {
 
                     VStack(spacing: 20) {
 
-                        // HUD row
                         HStack(alignment: .top) {
                             VStack(alignment: .leading, spacing: 4) {
                                 Text("SCORE")
@@ -75,7 +71,6 @@ struct LightItUpView: View {
                         .padding(.horizontal, 24)
                         .padding(.top, 16)
 
-                        // Lives (hearts)
                         HStack(spacing: 6) {
                             ForEach(0..<3, id: \.self) { index in
                                 Image(systemName: index < vm.lives ? "heart.fill" : "heart")
@@ -89,7 +84,6 @@ struct LightItUpView: View {
 
                         Spacer()
 
-                        // Card grid
                         HStack {
                             Spacer()
                             LazyVGrid(columns: vm.gridColumns, spacing: 16) {
@@ -132,7 +126,6 @@ struct LightItUpView: View {
                     )
                     .ignoresSafeArea(.all)
                 )
-                // Level-up flash overlay
                 .overlay(
                     Group {
                         if vm.showLevelFlash {

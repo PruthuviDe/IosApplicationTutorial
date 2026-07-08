@@ -1,12 +1,8 @@
 import SwiftUI
 import Combine
 
-// MARK: - LightItUpViewModel
-/// Owns all mutable state and logic for a Light It Up round.
-/// The view only reads @Published properties and calls intent methods.
 final class LightItUpViewModel: ObservableObject {
 
-    // MARK: Published state
     @Published var cards: [Card]   = [Card(), Card(), Card()]
     @Published var score           = 0
     @Published var timeRemaining   = 60
@@ -17,19 +13,15 @@ final class LightItUpViewModel: ObservableObject {
     @Published var flashColor: Color = .cyan
     @Published var isTransitioning = false
 
-    // MARK: Persisted
     @AppStorage("lightItUpHighScore") var highScore = 0
     @AppStorage("roundLength")        var roundLength = 60
 
-    // MARK: Private accumulator
     private var lightAccumulator = 0.0
     private var prevLevel: Level = .L1
 
-    // MARK: Timers (observed by the view via .onReceive)
     let countdownTimer = Timer.publish(every: 1,   on: .main, in: .common).autoconnect()
     let lightTimer     = Timer.publish(every: 0.4, on: .main, in: .common).autoconnect()
 
-    // MARK: Computed level from elapsed time
     var currentLevel: Level {
         let elapsed = roundLength - timeRemaining
         let quarter = roundLength / 4
@@ -45,14 +37,12 @@ final class LightItUpViewModel: ObservableObject {
         Array(repeating: GridItem(.fixed(100)), count: currentLevel.columns)
     }
 
-    // MARK: - Intent: start the round
     func startGame() {
         timeRemaining = roundLength
         gameStarted   = true
         prevLevel     = .L1
     }
 
-    // MARK: - Intent: process each 1-second countdown tick
     func countdownTick() {
         guard gameStarted && timeRemaining > 0 else { return }
 
@@ -60,7 +50,6 @@ final class LightItUpViewModel: ObservableObject {
         timeRemaining -= 1
         let after  = currentLevel
 
-        // Level changed — reset grid and show flash
         if after != before {
             for i in 0..<cards.count { cards[i].isLit = false }
             cards            = Array(repeating: Card(), count: after.cardCount)
@@ -81,7 +70,6 @@ final class LightItUpViewModel: ObservableObject {
         }
     }
 
-    // MARK: - Intent: process each 0.4-second light tick
     func lightTick() {
         guard gameStarted && lives > 0 && !isTransitioning else { return }
         lightAccumulator += 0.4
@@ -89,7 +77,6 @@ final class LightItUpViewModel: ObservableObject {
         guard lightAccumulator >= currentLevel.litWindow else { return }
         lightAccumulator = 0
 
-        // Miss any still-lit cards
         var anyMissed = false
         for i in 0..<cards.count {
             if cards[i].isLit { anyMissed = true }
@@ -97,7 +84,6 @@ final class LightItUpViewModel: ObservableObject {
         }
         if anyMissed { lives -= 1 }
 
-        // Light up new cards
         if lives > 0 && safeToLightCard {
             let indices = cards.indices.shuffled()
             for i in 0..<min(currentLevel.litCount, indices.count) {
@@ -106,7 +92,6 @@ final class LightItUpViewModel: ObservableObject {
         }
     }
 
-    // MARK: - Intent: player tapped a card
     func tapCard(index: Int) {
         guard index < cards.count else { return }
         if cards[index].isLit {
@@ -118,7 +103,6 @@ final class LightItUpViewModel: ObservableObject {
         }
     }
 
-    // MARK: - Intent: save session when game ends
     func saveSession() {
         if score > highScore { highScore = score }
         let loc = LocationService.shared.coordinate
@@ -130,7 +114,6 @@ final class LightItUpViewModel: ObservableObject {
         ))
     }
 
-    // MARK: - Intent: restart
     func restart() {
         score            = 0
         timeRemaining    = roundLength
@@ -142,7 +125,6 @@ final class LightItUpViewModel: ObservableObject {
         isTransitioning  = false
     }
 
-    // MARK: - Private helpers
     private var safeToLightCard: Bool {
         if currentLevel == .L4 { return true }
         let elapsed   = roundLength - timeRemaining

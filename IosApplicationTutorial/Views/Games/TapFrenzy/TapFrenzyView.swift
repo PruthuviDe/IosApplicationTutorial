@@ -8,7 +8,6 @@ struct TapFrenzyView: View {
     var body: some View {
         Group {
             if vm.timeRemaining == 0 {
-                // ── Game Over ──────────────────────────────────────────────
                 ResultView(
                     mode:      .tapFrenzy,
                     score:     vm.score,
@@ -17,7 +16,6 @@ struct TapFrenzyView: View {
                     onRestart: { vm.restart() }
                 )
             } else {
-                // ── Game Screen ────────────────────────────────────────────
                 ZStack {
                     RadialGradient(
                         colors: [vm.buttonType.color.opacity(0.30), Color.black],
@@ -30,7 +28,6 @@ struct TapFrenzyView: View {
 
                     VStack(spacing: 20) {
 
-                        // HUD
                         HStack {
                             VStack(alignment: .leading, spacing: 4) {
                                 Text("SCORE")
@@ -58,7 +55,6 @@ struct TapFrenzyView: View {
                         .padding(.horizontal, 24)
                         .padding(.top, 16)
 
-                        // Status badges
                         VStack(spacing: 6) {
                             if vm.comboMultiplier > 1 {
                                 HStack(spacing: 4) {
@@ -85,7 +81,6 @@ struct TapFrenzyView: View {
 
                         Spacer()
 
-                        // Tap button
                         Button(action: { vm.handleTap() }) {
                             ZStack {
                                 Circle()
