@@ -13,8 +13,7 @@ final class LightItUpViewModel: ObservableObject {
     @Published var flashColor: Color = .cyan
     @Published var isTransitioning = false
 
-    @AppStorage("lightItUpHighScore") var highScore = 0
-    @AppStorage("roundLength")        var roundLength = 60
+    @AppStorage("roundLength") var roundLength = 60
 
     private var lightAccumulator = 0.0
     private var prevLevel: Level = .L1
@@ -104,7 +103,6 @@ final class LightItUpViewModel: ObservableObject {
     }
 
     func saveSession() {
-        if score > highScore { highScore = score }
         let loc = LocationService.shared.coordinate
         SessionStore.shared.save(session: GameSession(
             mode: .lightItUp,

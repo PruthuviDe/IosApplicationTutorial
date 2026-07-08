@@ -10,10 +10,7 @@ final class TapFrenzyViewModel: ObservableObject {
     @Published var buttonOffsetY   = 0.0
     @Published var isBonusBurst    = false
     @Published var gameStarted     = false
-    @Published var isNewHighScore  = false
     @Published var buttonPressed   = false
-
-    @AppStorage("tapFrenzyHighScore") var highScore = 0
 
     private var lastTapTime    = Date()
     private var bonusBurstStart = 5
@@ -67,9 +64,6 @@ final class TapFrenzyViewModel: ObservableObject {
         if timeRemaining == bonusBurstStart - 2 { isBonusBurst = false }
 
         if timeRemaining == 0 {
-            isNewHighScore = score > highScore
-            if isNewHighScore { highScore = score }
-
             let loc = LocationService.shared.coordinate
             SessionStore.shared.save(session: GameSession(
                 mode: .tapFrenzy,
@@ -87,7 +81,6 @@ final class TapFrenzyViewModel: ObservableObject {
         lastTapTime     = Date()
         buttonType      = .normal
         gameStarted     = false
-        isNewHighScore  = false
         isBonusBurst    = false
         bonusBurstStart = 5
         buttonOffsetX   = 0.0

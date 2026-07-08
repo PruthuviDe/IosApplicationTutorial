@@ -1,12 +1,20 @@
 import SwiftUI
 
+// MARK: - ResultView
+/// Shared game-over screen used by all three games.
+/// Reads the current high score from SessionStore (single source of truth)
+/// so it never falls out of sync with @AppStorage values in ViewModels.
 struct ResultView: View {
 
-    let mode:       GameMode
-    let score:      Int
-    let highScore:  Int
-    let isNewBest:  Bool
-    let onRestart:  () -> Void
+    let mode:      GameMode
+    let score:     Int
+    let onRestart: () -> Void
+
+    // Single source of truth — computed from saved sessions
+    @ObservedObject private var store = SessionStore.shared
+    @State private var isNewBest = false
+
+    var currentBest: Int { store.highScore(for: mode) }
 
     var body: some View {
         VStack(spacing: 24) {
@@ -17,6 +25,7 @@ struct ResultView: View {
                 .font(.system(size: 28, weight: .bold, design: .rounded))
                 .foregroundColor(.white.opacity(0.6))
                 .tracking(2)
+
             VStack(spacing: 4) {
                 Text("\(score)")
                     .font(.system(size: 80, weight: .black, design: .rounded))
@@ -43,7 +52,7 @@ struct ResultView: View {
                 HStack(spacing: 4) {
                     Image(systemName: "trophy.fill")
                         .foregroundColor(.white.opacity(0.4))
-                    Text("Best: \(highScore)")
+                    Text("Best: \(currentBest)")
                         .font(.system(size: 16, weight: .semibold, design: .rounded))
                         .foregroundColor(.white.opacity(0.6))
                 }
@@ -66,16 +75,13 @@ struct ResultView: View {
                         )
                 }
 
+                // Reuses PrimaryButton component
                 Button(action: onRestart) {
-                    Text("PLAY AGAIN")
-                        .font(.system(size: 16, weight: .bold, design: .rounded))
-                        .foregroundColor(.white)
-                        .padding(.horizontal, 40)
-                        .padding(.vertical, 14)
-                        .background(mode.accentColor)
-                        .cornerRadius(24)
+                    PrimaryButton(title: "PLAY AGAIN", icon: "arrow.clockwise", color: mode.accentColor)
                 }
+                .buttonStyle(PlainButtonStyle())
             }
+            .padding(.horizontal, 32)
             .padding(.bottom, 40)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -88,15 +94,19 @@ struct ResultView: View {
         )
         .ignoresSafeArea(.all)
         .toolbar(.hidden, for: .tabBar)
+        .onAppear {
+            // Capture whether this score beats the previous best.
+            // Must read BEFORE the session is saved by the parent view's .onAppear
+            // (which fires after this .onAppear since ResultView is the child).
+            isNewBest = score > store.highScore(for: mode)
+        }
     }
 }
 
 #Preview {
     ResultView(
-        mode: .tapFrenzy,
-        score: 42,
-        highScore: 50,
-        isNewBest: false,
+        mode:      .tapFrenzy,
+        score:     42,
         onRestart: {}
     )
 }

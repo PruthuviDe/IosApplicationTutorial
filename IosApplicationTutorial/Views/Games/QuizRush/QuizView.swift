@@ -5,7 +5,6 @@ struct QuizView: View {
 
     @StateObject private var viewModel = QuizViewModel()
     @State private var currentAnswers: [String] = []
-    @AppStorage("quizRushHighScore") private var highScore = 0
     @AppStorage("quizTimerSeconds") private var timerSeconds = 0
 
     @State private var flashColor: Color = .clear
@@ -33,14 +32,9 @@ struct QuizView: View {
                     ResultView(
                         mode:      .quizRush,
                         score:     viewModel.score,
-                        highScore: highScore,
-                        isNewBest: viewModel.score > highScore,
                         onRestart: { viewModel.playAgain() }
                     )
                     .onAppear {
-                        if viewModel.score > highScore {
-                            highScore = viewModel.score
-                        }
                         let loc = LocationService.shared.coordinate
                         SessionStore.shared.save(session: GameSession(
                             mode: .quizRush,

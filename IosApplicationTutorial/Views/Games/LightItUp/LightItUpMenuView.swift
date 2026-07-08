@@ -75,18 +75,13 @@ struct LightItUpMenuView: View {
                 Spacer()
 
                 NavigationLink(destination: LightItUpView()) {
-                    HStack(spacing: 8) {
-                        Image(systemName: "play.fill")
-                        Text("START GAME")
-                    }
-                    .font(.system(size: 16, weight: .bold, design: .rounded))
-                    .foregroundColor(.white)
-                    .padding(.horizontal, 44)
-                    .padding(.vertical, 14)
-                    .background(Color(red: 0.20, green: 0.83, blue: 0.95))
-                    .cornerRadius(24)
-                    .shadow(color: Color(red: 0.20, green: 0.83, blue: 0.95).opacity(0.30), radius: 10)
+                    PrimaryButton(
+                        title: "START GAME",
+                        icon:  "play.fill",
+                        color: Color(red: 0.20, green: 0.83, blue: 0.95)
+                    )
                 }
+                .buttonStyle(PlainButtonStyle())
                 .padding(.bottom, 20)
 
                 Spacer()

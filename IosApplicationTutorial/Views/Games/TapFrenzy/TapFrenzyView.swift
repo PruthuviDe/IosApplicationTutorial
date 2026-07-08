@@ -11,8 +11,6 @@ struct TapFrenzyView: View {
                 ResultView(
                     mode:      .tapFrenzy,
                     score:     vm.score,
-                    highScore: vm.highScore,
-                    isNewBest: vm.isNewHighScore,
                     onRestart: { vm.restart() }
                 )
             } else {

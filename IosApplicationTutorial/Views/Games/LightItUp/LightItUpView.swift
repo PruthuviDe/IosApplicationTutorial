@@ -11,8 +11,6 @@ struct LightItUpView: View {
                 ResultView(
                     mode:      .lightItUp,
                     score:     vm.score,
-                    highScore: vm.highScore,
-                    isNewBest: vm.score >= vm.highScore && vm.score > 0,
                     onRestart: { vm.restart() }
                 )
                 .onAppear { vm.saveSession() }
