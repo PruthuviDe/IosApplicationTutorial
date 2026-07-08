@@ -7,9 +7,8 @@ enum PrimaryButtonStyleType {
 }
 
 // MARK: - PrimaryButton
-/// A premium, high-tech gaming button designed to match GameVault's dark theme.
-/// Replaces generic solid-color buttons with a dark-glass cyberpunk panel,
-/// featuring vibrant glowing neon borders, white titles, and tinted icons.
+/// A clean, simple, and proportional button matching the standard iOS design language.
+/// Avoids over-designed glows and fits cleanly inside the view without stretching edge-to-edge.
 struct PrimaryButton: View {
 
     let title: String
@@ -18,63 +17,34 @@ struct PrimaryButton: View {
     var style: PrimaryButtonStyleType = .filled
 
     var body: some View {
-        HStack(spacing: 10) {
+        HStack(spacing: 8) {
             if let icon = icon {
                 Image(systemName: icon)
                     .font(.system(size: 14, weight: .bold))
-                    .foregroundColor(color) // Tinted icon
             }
-            
-            Text(title.uppercased())
-                .font(.system(size: 13, weight: .black, design: .rounded))
-                .foregroundColor(.white) // Always clean white text
-                .tracking(2.0) // Arcade character spacing
+            Text(title)
+                .font(.system(size: 14, weight: .bold, design: .rounded))
         }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 15)
+        .foregroundColor(style == .filled ? .white : color)
+        .frame(width: 280) // Capped width so it's not too large/stretched on screen
+        .padding(.vertical, 12) // Compact vertical padding
         .background(
-            ZStack {
-                // Cyberpunk dark carbon backplate
-                Color.black.opacity(0.65)
-                
+            Group {
                 if style == .filled {
-                    // Soft internal radial/linear glow
-                    LinearGradient(
-                        colors: [color.opacity(0.15), color.opacity(0.02)],
-                        startPoint: .top,
-                        endPoint: .bottom
-                    )
+                    color
                 } else {
-                    // Translucent backing
-                    Color.white.opacity(0.02)
+                    Color.clear
                 }
             }
         )
-        .cornerRadius(12) // Sleek, modern corner radius instead of pill shape
+        .cornerRadius(10) // Simple, clean rounded corners
         .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(
-                    LinearGradient(
-                        colors: style == .filled
-                            ? [color, color.opacity(0.40)]
-                            : [color.opacity(0.45), color.opacity(0.15)],
-                        startPoint: .top,
-                        endPoint: .bottom
-                    ),
-                    lineWidth: style == .filled ? 2.0 : 1.2
-                )
-        )
-        // High-tech subtle inner bezel highlight
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.white.opacity(0.08), lineWidth: 1)
-                .padding(1)
-        )
-        .shadow(
-            color: color.opacity(style == .filled ? 0.35 : 0.08),
-            radius: style == .filled ? 12 : 6,
-            x: 0,
-            y: style == .filled ? 4 : 2
+            Group {
+                if style == .outlined {
+                    RoundedRectangle(cornerRadius: 10)
+                        .stroke(color, lineWidth: 1.5) // Simple clean outline
+                }
+            }
         )
     }
 }
