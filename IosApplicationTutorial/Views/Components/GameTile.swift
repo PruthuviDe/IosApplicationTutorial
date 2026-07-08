@@ -2,9 +2,8 @@ import SwiftUI
 
 // MARK: - GameTile
 /// A home-screen game card that navigates to its game view.
-/// Uses AnyView for the destination so all three GameTile instances
-/// in the VStack have a uniform type, which is required for stable
-/// SwiftUI NavigationStack rendering.
+/// Displays the game icon, title, subtitle, and a clean, high-contrast
+/// high score indicator aligned with the game's theme color.
 struct GameTile: View {
 
     let mode:        GameMode
@@ -15,59 +14,76 @@ struct GameTile: View {
         NavigationLink(destination: destination) {
             HStack(spacing: 16) {
 
-                // Game artwork
+                // Game artwork icon
                 Image(mode.imageName)
                     .resizable()
                     .aspectRatio(contentMode: .fill)
-                    .frame(width: 52, height: 52)
-                    .cornerRadius(14)
+                    .frame(width: 50, height: 50)
+                    .cornerRadius(12)
                     .overlay(
-                        RoundedRectangle(cornerRadius: 14)
-                            .stroke(mode.accentColor.opacity(0.25), lineWidth: 1.5)
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(mode.accentColor.opacity(0.30), lineWidth: 1.2)
                     )
 
-                // Title + subtitle
+                // Title + Subtitle
                 VStack(alignment: .leading, spacing: 4) {
                     Text(mode.rawValue)
-                        .font(.system(size: 17, weight: .bold, design: .rounded))
+                        .font(.system(size: 16, weight: .bold, design: .rounded))
                         .foregroundColor(.white)
 
                     Text(mode.subtitle)
                         .font(.system(size: 12, weight: .medium, design: .rounded))
-                        .foregroundColor(.white.opacity(0.4))
+                        .foregroundColor(.white.opacity(0.40))
                 }
 
                 Spacer()
 
-                // Chevron + best score
-                VStack(alignment: .trailing, spacing: 6) {
+                // High score layout (Clean & Modern)
+                HStack(spacing: 12) {
+                    VStack(alignment: .trailing, spacing: 2) {
+                        Text("BEST")
+                            .font(.system(size: 8, weight: .black))
+                            .foregroundColor(.white.opacity(0.30))
+                            .tracking(1.0)
+                        
+                        HStack(alignment: .firstTextBaseline, spacing: 2) {
+                            Text("\(highScore)")
+                                .font(.system(size: 18, weight: .black, design: .rounded))
+                                .foregroundColor(mode.accentColor)
+                            
+                            Text("pts")
+                                .font(.system(size: 10, weight: .bold))
+                                .foregroundColor(.white.opacity(0.30))
+                        }
+                    }
+                    
                     Image(systemName: "chevron.right")
-                        .font(.system(size: 11, weight: .semibold))
-                        .foregroundColor(.white.opacity(0.25))
-
-                    Text("Best: \(highScore)")
-                        .font(.system(size: 10, weight: .bold, design: .rounded))
-                        .foregroundColor(mode.accentColor)
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 3)
-                        .background(mode.accentColor.opacity(0.10))
-                        .cornerRadius(6)
+                        .font(.system(size: 12, weight: .bold))
+                        .foregroundColor(.white.opacity(0.18))
                 }
             }
-            .padding(16)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 14)
             .background(
-                RoundedRectangle(cornerRadius: 18)
+                RoundedRectangle(cornerRadius: 16)
                     .fill(
                         LinearGradient(
-                            colors: [Color.white.opacity(0.08), Color.white.opacity(0.03)],
+                            colors: [Color.white.opacity(0.06), mode.accentColor.opacity(0.015)],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         )
                     )
             )
             .overlay(
-                RoundedRectangle(cornerRadius: 18)
-                    .stroke(Color.white.opacity(0.12), lineWidth: 1)
+                RoundedRectangle(cornerRadius: 16)
+                    .stroke(
+                        LinearGradient(
+                            colors: [Color.white.opacity(0.10), mode.accentColor.opacity(0.08)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        ),
+                        lineWidth: 1
+                    )
             )
         }
         .buttonStyle(PlainButtonStyle())
@@ -78,7 +94,7 @@ struct GameTile: View {
     GameTile(
         mode:        .tapFrenzy,
         destination: AnyView(Text("Tap Frenzy")),
-        highScore:   42
+        highScore:   1382
     )
     .padding()
     .background(Color.black)
