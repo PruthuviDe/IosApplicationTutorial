@@ -60,17 +60,8 @@ struct ResultView: View {
 
             Spacer()
 
-            VStack(spacing: 14) {
-                ShareLink(item: "I just scored \(score) on \(mode.rawValue) in GameVault — beat that! 🎮") {
-                    PrimaryButton(
-                        title: "Share Score",
-                        icon: "square.and.arrow.up",
-                        color: mode.accentColor,
-                        style: .outlined
-                    )
-                }
-
-                // Reuses PrimaryButton component
+            VStack(spacing: 20) {
+                // Reuses PrimaryButton component (Primary filled button)
                 Button(action: onRestart) {
                     PrimaryButton(
                         title: "PLAY AGAIN",
@@ -80,8 +71,19 @@ struct ResultView: View {
                     )
                 }
                 .buttonStyle(PlainButtonStyle())
+
+                // Modern borderless Share Link (Secondary clean link)
+                ShareLink(item: "I just scored \(score) on \(mode.rawValue) in GameVault — beat that! 🎮") {
+                    HStack(spacing: 6) {
+                        Image(systemName: "square.and.arrow.up")
+                            .font(.system(size: 14, weight: .semibold))
+                        Text("Share Score")
+                            .font(.system(size: 14, weight: .bold, design: .rounded))
+                    }
+                    .foregroundColor(mode.accentColor.opacity(0.90))
+                    .padding(.vertical, 8)
+                }
             }
-            .padding(.horizontal, 32)
             .padding(.bottom, 40)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
