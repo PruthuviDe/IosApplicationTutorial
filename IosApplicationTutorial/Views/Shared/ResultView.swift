@@ -62,22 +62,22 @@ struct ResultView: View {
 
             VStack(spacing: 14) {
                 ShareLink(item: "I just scored \(score) on \(mode.rawValue) in GameVault — beat that! 🎮") {
-                    Label("Share Score", systemImage: "square.and.arrow.up")
-                        .font(.system(size: 15, weight: .semibold, design: .rounded))
-                        .foregroundColor(mode.accentColor)
-                        .padding(.horizontal, 32)
-                        .padding(.vertical, 12)
-                        .background(mode.accentColor.opacity(0.12))
-                        .cornerRadius(20)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 20)
-                                .stroke(mode.accentColor.opacity(0.30), lineWidth: 1)
-                        )
+                    PrimaryButton(
+                        title: "Share Score",
+                        icon: "square.and.arrow.up",
+                        color: mode.accentColor,
+                        style: .outlined
+                    )
                 }
 
                 // Reuses PrimaryButton component
                 Button(action: onRestart) {
-                    PrimaryButton(title: "PLAY AGAIN", icon: "arrow.clockwise", color: mode.accentColor)
+                    PrimaryButton(
+                        title: "PLAY AGAIN",
+                        icon: "arrow.clockwise",
+                        color: mode.accentColor,
+                        style: .filled
+                    )
                 }
                 .buttonStyle(PlainButtonStyle())
             }
