@@ -7,8 +7,9 @@ enum PrimaryButtonStyleType {
 }
 
 // MARK: - PrimaryButton
-/// A clean, simple, and proportional button matching the standard iOS design language.
-/// Avoids over-designed glows and fits cleanly inside the view without stretching edge-to-edge.
+/// A refined, glassmorphic button matching the design system of GameVault.
+/// Uses semi-translucent backdrops and borders to match the existing game panels.
+/// Features a compact size, consistent uppercase layout, and no glowing shadows.
 struct PrimaryButton: View {
 
     let title: String
@@ -21,30 +22,32 @@ struct PrimaryButton: View {
             if let icon = icon {
                 Image(systemName: icon)
                     .font(.system(size: 14, weight: .bold))
+                    .foregroundColor(style == .filled ? color : .white.opacity(0.8)) // Tinted icon for filled, dim white for outlined
             }
-            Text(title)
-                .font(.system(size: 14, weight: .bold, design: .rounded))
+            
+            Text(title.uppercased())
+                .font(.system(size: 13, weight: .bold, design: .rounded))
+                .foregroundColor(.white)
+                .tracking(1.0)
         }
-        .foregroundColor(style == .filled ? .white : color)
-        .frame(width: 280) // Capped width so it's not too large/stretched on screen
-        .padding(.vertical, 12) // Compact vertical padding
+        .frame(width: 280) // Unified compact width
+        .padding(.vertical, 14) // Balanced vertical height
         .background(
-            Group {
-                if style == .filled {
-                    color
-                } else {
-                    Color.clear
-                }
-            }
+            RoundedRectangle(cornerRadius: 14)
+                .fill(
+                    style == .filled
+                        ? color.opacity(0.16) // Translucent accent glass fill
+                        : Color.white.opacity(0.05) // Translucent neutral glass fill
+                )
         )
-        .cornerRadius(10) // Simple, clean rounded corners
         .overlay(
-            Group {
-                if style == .outlined {
-                    RoundedRectangle(cornerRadius: 10)
-                        .stroke(color, lineWidth: 1.5) // Simple clean outline
-                }
-            }
+            RoundedRectangle(cornerRadius: 14)
+                .stroke(
+                    style == .filled
+                        ? color.opacity(0.50) // Accent border
+                        : Color.white.opacity(0.15), // Neutral border
+                    lineWidth: 1.2
+                )
         )
     }
 }
