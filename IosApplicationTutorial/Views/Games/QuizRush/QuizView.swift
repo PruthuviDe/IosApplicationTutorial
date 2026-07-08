@@ -30,7 +30,25 @@ struct QuizView: View {
 
             case .loaded:
                 if viewModel.isFinished {
-                    resultsView
+                    ResultView(
+                        mode:      .quizRush,
+                        score:     viewModel.score,
+                        highScore: highScore,
+                        isNewBest: viewModel.score > highScore,
+                        onRestart: { viewModel.playAgain() }
+                    )
+                    .onAppear {
+                        if viewModel.score > highScore {
+                            highScore = viewModel.score
+                        }
+                        let loc = LocationService.shared.coordinate
+                        SessionStore.shared.save(session: GameSession(
+                            mode: .quizRush,
+                            score: viewModel.score,
+                            latitude: loc.latitude,
+                            longitude: loc.longitude
+                        ))
+                    }
                 } else {
                     questionView
                 }
@@ -291,87 +309,6 @@ struct QuizView: View {
         }
     }
 
-    var resultsView: some View {
-        VStack(spacing: 24) {
-
-            Spacer()
-
-            Image(systemName: "star.fill")
-                .font(.system(size: 68))
-                .foregroundColor(.yellow)
-                .shadow(color: .yellow.opacity(0.4), radius: 15)
-
-            Text("Quiz Complete!")
-                .font(.system(size: 28, weight: .bold, design: .rounded))
-                .foregroundColor(.white)
-                .tracking(0.5)
-
-            VStack(spacing: 4) {
-                Text("\(viewModel.score)")
-                    .font(.system(size: 80, weight: .black, design: .rounded))
-                    .foregroundColor(.white)
-                Text("FINAL SCORE")
-                    .font(.system(size: 12, weight: .bold))
-                    .foregroundColor(.white.opacity(0.4))
-                    .tracking(1)
-            }
-
-            if viewModel.score > highScore {
-                HStack(spacing: 6) {
-                    Image(systemName: "crown.fill")
-                        .foregroundColor(.yellow)
-                    Text("NEW HIGH SCORE!")
-                        .font(.system(size: 14, weight: .bold, design: .rounded))
-                        .foregroundColor(.yellow)
-                }
-                .padding(.horizontal, 14)
-                .padding(.vertical, 6)
-                .background(Color.yellow.opacity(0.1))
-                .cornerRadius(12)
-            } else {
-                HStack(spacing: 4) {
-                    Image(systemName: "trophy.fill")
-                        .foregroundColor(.white.opacity(0.4))
-                    Text("Best: \(highScore)")
-                        .font(.system(size: 16, weight: .semibold, design: .rounded))
-                        .foregroundColor(.white.opacity(0.6))
-                }
-            }
-
-            Spacer()
-
-            Button(action: { viewModel.playAgain() }) {
-                Text("PLAY AGAIN")
-                    .font(.system(size: 16, weight: .bold, design: .rounded))
-                    .foregroundColor(.white)
-                    .padding(.horizontal, 40)
-                    .padding(.vertical, 14)
-                    .background(Color(red: 0.65, green: 0.35, blue: 0.95))
-                    .cornerRadius(24)
-            }
-            
-            ShareLink(item: "I just scored \(viewModel.score) on Quiz Rush in PlayHub — beat that! 🎮") {
-                Label("Share Score", systemImage: "square.and.arrow.up")
-                    .font(.system(size: 14, weight: .bold, design: .rounded))
-                    .foregroundColor(Color(red: 0.65, green: 0.35, blue: 0.95))
-            }
-            .padding(.bottom, 20)
-
-            Spacer()
-        }
-        .onAppear {
-            if viewModel.score > highScore {
-                highScore = viewModel.score
-            }
-            let loc = LocationService.shared.coordinate
-            SessionStore.shared.save(session: GameSession(
-                mode: .quizRush,
-                score: viewModel.score,
-                latitude: loc.latitude,
-                longitude: loc.longitude
-            ))
-        }
-    }
 }
 
 #Preview {
