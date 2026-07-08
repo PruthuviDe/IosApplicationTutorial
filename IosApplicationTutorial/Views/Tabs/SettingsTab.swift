@@ -14,7 +14,7 @@ struct SettingsTab: View {
         NavigationStack {
             ZStack {
                 RadialGradient(
-                    colors: [Color(red: 0.65, green: 0.35, blue: 0.95).opacity(0.24), Color.black],
+                    colors: [Color(red: 0.65, green: 0.35, blue: 0.95).opacity(0.35), Color(red: 0.08, green: 0.09, blue: 0.14)],
                     center: .top,
                     startRadius: 10,
                     endRadius: 400
@@ -217,7 +217,7 @@ struct SettingsTab: View {
             }
             .background(
                 LinearGradient(
-                    colors: [Color(red: 0.08, green: 0.09, blue: 0.14), Color.black],
+                    colors: [Color(red: 0.08, green: 0.09, blue: 0.14), Color(red: 0.12, green: 0.14, blue: 0.20)],
                     startPoint: .top,
                     endPoint: .bottom
                 )

@@ -1,12 +1,12 @@
 import SwiftUI
 
 // MARK: - PrimaryButton
-/// A clean, flat, and high-contrast primary button designed for GameVault.
-/// Follows Apple's HIG and modern mobile game patterns:
-/// - Prominent, solid background color matching the game mode's theme.
-/// - Clear, high-contrast white text and bold icons.
-/// - Compact, consistent sizing (280pt width) fitting comfortably in the thumb zone.
-/// - Flat style with no distracting outer borders, glowing shadows, or extra overlays.
+/// A clean, compact, pill-shaped primary action button.
+/// Follows premium iOS mobile game interfaces:
+/// - Friendly Capsule shape with a compact, balanced width (240pt).
+/// - Rich visual depth using a soft vertical gradient of the theme color.
+/// - A thin, semi-translucent top bezel stroke (15% white) for a subtle 3D molded effect.
+/// - A soft, standard dark shadow (35% black) for a floating lift without distracting neon glows.
 struct PrimaryButton: View {
 
     let title: String
@@ -17,16 +17,33 @@ struct PrimaryButton: View {
         HStack(spacing: 8) {
             if let icon = icon {
                 Image(systemName: icon)
-                    .font(.system(size: 14, weight: .bold))
+                    .font(.system(size: 15, weight: .bold))
             }
-            Text(title.uppercased())
-                .font(.system(size: 14, weight: .bold, design: .rounded))
+            Text(title)
+                .font(.system(size: 15, weight: .bold, design: .rounded))
         }
         .foregroundColor(.white)
-        .frame(width: 280) // Clean, centered proportional width
-        .padding(.vertical, 14) // Compact vertical touch target (44pt+ safe target)
-        .background(color) // Solid vibrant theme color
-        .cornerRadius(12) // Clean, modern rounded corners matching game cards
+        .frame(width: 240) // Compact centered width (prevents stretching)
+        .padding(.vertical, 14) // Balanced, comfortable touch target height
+        .background(
+            // Soft vertical gradient for premium depth
+            LinearGradient(
+                colors: [color, color.opacity(0.85)],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+        )
+        .clipShape(Capsule()) // Friendly, premium capsule shape
+        .overlay(
+            Capsule()
+                .stroke(Color.white.opacity(0.15), lineWidth: 1.2) // Subtle bevel highlight
+        )
+        .shadow(
+            color: Color.black.opacity(0.35), // Dark shadow for depth (no glowing neon)
+            radius: 5,
+            x: 0,
+            y: 3
+        )
     }
 }
 
