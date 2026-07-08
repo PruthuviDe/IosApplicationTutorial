@@ -69,9 +69,9 @@ struct HomeTab: View {
 
                     ScrollView(showsIndicators: false) {
                         VStack(spacing: 16) {
-                            GameTile(mode: .tapFrenzy, destination: TapFrenzyView())
-                            GameTile(mode: .lightItUp, destination: LightItUpMenuView())
-                            GameTile(mode: .quizRush,  destination: QuizMenuView())
+                            GameTile(mode: .tapFrenzy, destination: AnyView(TapFrenzyView()))
+                            GameTile(mode: .lightItUp, destination: AnyView(LightItUpMenuView()))
+                            GameTile(mode: .quizRush,  destination: AnyView(QuizMenuView()))
                         }
                         .padding(.horizontal, 24)
                         .padding(.bottom, 24)

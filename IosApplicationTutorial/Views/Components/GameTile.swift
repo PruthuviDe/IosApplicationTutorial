@@ -1,13 +1,14 @@
 import SwiftUI
 
 // MARK: - GameTile
-/// A home-screen game card that navigates to any game destination view.
-/// Uses a generic `Destination` parameter instead of `AnyView` type-erasure
-/// so SwiftUI can efficiently diff the view hierarchy.
-struct GameTile<Destination: View>: View {
+/// A home-screen game card that navigates to its game view.
+/// Uses AnyView for the destination so all three GameTile instances
+/// in the VStack have a uniform type, which is required for stable
+/// SwiftUI NavigationStack rendering.
+struct GameTile: View {
 
     let mode:        GameMode
-    let destination: Destination
+    let destination: AnyView
 
     var highScore: Int {
         UserDefaults.standard.integer(forKey: mode.highScoreKey)
@@ -77,7 +78,10 @@ struct GameTile<Destination: View>: View {
 }
 
 #Preview {
-    GameTile(mode: .tapFrenzy, destination: Text("Tap Frenzy View"))
-        .padding()
-        .background(Color.black)
+    GameTile(
+        mode: .tapFrenzy,
+        destination: AnyView(Text("Tap Frenzy"))
+    )
+    .padding()
+    .background(Color.black)
 }
