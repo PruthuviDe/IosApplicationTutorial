@@ -2,10 +2,7 @@ import SwiftUI
 
 struct LightItUpMenuView: View {
 
-    @AppStorage("roundLength") private var roundLength = 60
-
     var body: some View {
-
         ZStack {
             RadialGradient(
                 colors: [Color(red: 0.20, green: 0.83, blue: 0.95).opacity(0.18), Color.black],
@@ -31,13 +28,14 @@ struct LightItUpMenuView: View {
                     .foregroundColor(.white)
                     .tracking(0.5)
 
+                // How to play
                 VStack(alignment: .leading, spacing: 12) {
                     Text("HOW TO PLAY")
                         .font(.system(size: 11, weight: .bold))
                         .foregroundColor(Color(red: 0.20, green: 0.83, blue: 0.95))
                         .tracking(1)
 
-                    Text("• Tap the glowing card before it goes dark.\n• Earn points for every correct tap.\n• Missing a card or tapping the wrong card costs a life.")
+                    Text("• Tap the glowing card before it goes dark.\n• Missing or tapping the wrong card costs a life.\n• You have 3 lives — survive as long as you can!")
                         .font(.system(size: 13, weight: .medium, design: .rounded))
                         .foregroundColor(.white.opacity(0.7))
                         .lineSpacing(6)
@@ -51,20 +49,22 @@ struct LightItUpMenuView: View {
                         .stroke(Color.white.opacity(0.08), lineWidth: 1)
                 )
 
-                VStack(alignment: .leading, spacing: 10) {
-                    Text("ROUND LENGTH")
+                // Progressive difficulty info
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("PROGRESSIVE DIFFICULTY")
                         .font(.system(size: 11, weight: .bold))
                         .foregroundColor(Color(red: 0.20, green: 0.83, blue: 0.95))
                         .tracking(1)
 
-                    Picker("Round Length", selection: $roundLength) {
-                        Text("30s").tag(30)
-                        Text("60s").tag(60)
-                        Text("90s").tag(90)
+                    VStack(alignment: .leading, spacing: 6) {
+                        diffRow(score: "Score 0+",  desc: "Tap the glowing card")
+                        diffRow(score: "Score 10+", desc: "Multiple colours — tap the right one")
+                        diffRow(score: "30+",       desc: "Sequence mode — tap in order 🟢→🔵→🟠")
+                        diffRow(score: "Higher…",   desc: "More cards, faster windows, no ceiling")
                     }
-                    .pickerStyle(.segmented)
                 }
-                .padding(16)
+                .padding(20)
+                .frame(maxWidth: .infinity, alignment: .leading)
                 .background(Color.white.opacity(0.04))
                 .cornerRadius(16)
                 .overlay(
@@ -96,6 +96,18 @@ struct LightItUpMenuView: View {
             )
         )
         .toolbar(.hidden, for: .tabBar)
+    }
+
+    private func diffRow(score: String, desc: String) -> some View {
+        HStack(alignment: .top, spacing: 10) {
+            Text(score)
+                .font(.system(size: 11, weight: .bold, design: .monospaced))
+                .foregroundColor(Color(red: 0.20, green: 0.83, blue: 0.95))
+                .frame(width: 68, alignment: .leading)
+            Text(desc)
+                .font(.system(size: 12, weight: .medium, design: .rounded))
+                .foregroundColor(.white.opacity(0.65))
+        }
     }
 }
 
