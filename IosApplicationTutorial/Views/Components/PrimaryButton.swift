@@ -1,54 +1,32 @@
 import SwiftUI
 
-// MARK: - PrimaryButtonStyleType
-enum PrimaryButtonStyleType {
-    case filled
-    case outlined
-}
-
 // MARK: - PrimaryButton
-/// A refined, glassmorphic button matching the design system of GameVault.
-/// Uses semi-translucent backdrops and borders to match the existing game panels.
-/// Features a compact size, consistent uppercase layout, and no glowing shadows.
+/// A clean, flat, and high-contrast primary button designed for GameVault.
+/// Follows Apple's HIG and modern mobile game patterns:
+/// - Prominent, solid background color matching the game mode's theme.
+/// - Clear, high-contrast white text and bold icons.
+/// - Compact, consistent sizing (280pt width) fitting comfortably in the thumb zone.
+/// - Flat style with no distracting outer borders, glowing shadows, or extra overlays.
 struct PrimaryButton: View {
 
     let title: String
     var icon: String? = nil
     var color: Color = .purple
-    var style: PrimaryButtonStyleType = .filled
 
     var body: some View {
         HStack(spacing: 8) {
             if let icon = icon {
                 Image(systemName: icon)
                     .font(.system(size: 14, weight: .bold))
-                    .foregroundColor(style == .filled ? color : .white.opacity(0.8)) // Tinted icon for filled, dim white for outlined
             }
-            
             Text(title.uppercased())
-                .font(.system(size: 13, weight: .bold, design: .rounded))
-                .foregroundColor(.white)
-                .tracking(1.0)
+                .font(.system(size: 14, weight: .bold, design: .rounded))
         }
-        .frame(width: 280) // Unified compact width
-        .padding(.vertical, 14) // Balanced vertical height
-        .background(
-            RoundedRectangle(cornerRadius: 14)
-                .fill(
-                    style == .filled
-                        ? color.opacity(0.16) // Translucent accent glass fill
-                        : Color.white.opacity(0.05) // Translucent neutral glass fill
-                )
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 14)
-                .stroke(
-                    style == .filled
-                        ? color.opacity(0.50) // Accent border
-                        : Color.white.opacity(0.15), // Neutral border
-                    lineWidth: 1.2
-                )
-        )
+        .foregroundColor(.white)
+        .frame(width: 280) // Clean, centered proportional width
+        .padding(.vertical, 14) // Compact vertical touch target (44pt+ safe target)
+        .background(color) // Solid vibrant theme color
+        .cornerRadius(12) // Clean, modern rounded corners matching game cards
     }
 }
 
@@ -57,15 +35,13 @@ struct PrimaryButton: View {
         PrimaryButton(
             title: "START GAME",
             icon: "play.fill",
-            color: Color(red: 0.20, green: 0.83, blue: 0.95),
-            style: .filled
+            color: Color(red: 0.20, green: 0.83, blue: 0.95)
         )
         
         PrimaryButton(
-            title: "SHARE SCORE",
-            icon: "square.and.arrow.up",
-            color: Color(red: 0.20, green: 0.83, blue: 0.95),
-            style: .outlined
+            title: "PLAY AGAIN",
+            icon: "arrow.clockwise",
+            color: .purple
         )
     }
     .padding()

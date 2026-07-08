@@ -66,8 +66,7 @@ struct ResultView: View {
                     PrimaryButton(
                         title: "PLAY AGAIN",
                         icon: "arrow.clockwise",
-                        color: mode.accentColor,
-                        style: .filled
+                        color: mode.accentColor
                     )
                 }
                 .buttonStyle(PlainButtonStyle())
