@@ -2,7 +2,8 @@ import SwiftUI
 
 struct HomeTab: View {
 
-    @AppStorage("playerName") private var playerName = "Player One"
+    @AppStorage("playerName")   private var playerName = "Player One"
+    @ObservedObject private var store = SessionStore.shared
 
     var body: some View {
 
@@ -69,9 +70,9 @@ struct HomeTab: View {
 
                     ScrollView(showsIndicators: false) {
                         VStack(spacing: 16) {
-                            GameTile(mode: .tapFrenzy, destination: AnyView(TapFrenzyView()))
-                            GameTile(mode: .lightItUp, destination: AnyView(LightItUpMenuView()))
-                            GameTile(mode: .quizRush,  destination: AnyView(QuizMenuView()))
+                            GameTile(mode: .tapFrenzy, destination: AnyView(TapFrenzyView()),    highScore: store.highScore(for: .tapFrenzy))
+                            GameTile(mode: .lightItUp, destination: AnyView(LightItUpMenuView()), highScore: store.highScore(for: .lightItUp))
+                            GameTile(mode: .quizRush,  destination: AnyView(QuizMenuView()),     highScore: store.highScore(for: .quizRush))
                         }
                         .padding(.horizontal, 24)
                         .padding(.bottom, 24)

@@ -9,10 +9,7 @@ struct GameTile: View {
 
     let mode:        GameMode
     let destination: AnyView
-
-    var highScore: Int {
-        UserDefaults.standard.integer(forKey: mode.highScoreKey)
-    }
+    let highScore:   Int
 
     var body: some View {
         NavigationLink(destination: destination) {
@@ -79,8 +76,9 @@ struct GameTile: View {
 
 #Preview {
     GameTile(
-        mode: .tapFrenzy,
-        destination: AnyView(Text("Tap Frenzy"))
+        mode:        .tapFrenzy,
+        destination: AnyView(Text("Tap Frenzy")),
+        highScore:   42
     )
     .padding()
     .background(Color.black)

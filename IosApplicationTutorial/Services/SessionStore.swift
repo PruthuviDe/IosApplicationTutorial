@@ -20,6 +20,12 @@ class SessionStore: ObservableObject {
     func resetAll() {
         sessions = []
         persist()
+        // Also clear the individual per-game high scores stored by each
+        // game ViewModel via @AppStorage so the home-screen cards and
+        // in-game "Best:" labels both show 0 after a reset.
+        for mode in GameMode.allCases {
+            UserDefaults.standard.removeObject(forKey: mode.highScoreKey)
+        }
     }
 
     var totalGamesPlayed: Int { sessions.count }
