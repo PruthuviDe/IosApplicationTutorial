@@ -143,35 +143,61 @@ struct StatsTab: View {
                                         .foregroundColor(.white.opacity(0.4))
                                         .tracking(1.5)
 
-                                    Chart {
-                                        ForEach(store.recentSessions) { session in
-                                            BarMark(
-                                                x: .value("Game", session.timestamp, unit: .second),
-                                                y: .value("Score", session.score)
-                                            )
-                                            .foregroundStyle(session.mode.accentColor)
-                                            .cornerRadius(4)
-                                        }
-                                    }
-                                    .frame(height: 140)
-                                    .chartXAxis(.hidden)
-                                    .chartYAxis {
-                                        AxisMarks(position: .leading) { value in
-                                            AxisGridLine()
-                                                .foregroundStyle(Color.white.opacity(0.06))
-                                            AxisValueLabel()
-                                                .foregroundStyle(Color.white.opacity(0.35))
-                                                .font(.system(size: 10, weight: .medium))
-                                        }
-                                    }
-                                    .padding(14)
-                                    .background(Color.white.opacity(0.03))
-                                    .cornerRadius(14)
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 14)
-                                            .stroke(Color.white.opacity(0.06), lineWidth: 1)
-                                    )
+                                    let chartData = store.sessions
+                                        .sorted { $0.timestamp < $1.timestamp }
+                                        .enumerated()
+                                        .map { (index: $0.offset, session: $0.element) }
 
+                                    if chartData.isEmpty {
+                                        Text("No data yet")
+                                            .font(.system(size: 13, weight: .medium, design: .rounded))
+                                            .foregroundColor(.white.opacity(0.3))
+                                            .frame(maxWidth: .infinity, minHeight: 140, alignment: .center)
+                                    } else {
+                                        Chart {
+                                            ForEach(chartData, id: \.index) { item in
+                                                BarMark(
+                                                    x: .value("Game", item.index + 1),
+                                                    y: .value("Score", item.session.score)
+                                                )
+                                                .foregroundStyle(item.session.mode.accentColor)
+                                                .cornerRadius(4)
+                                                .annotation(position: .top) {
+                                                    if chartData.count <= 10 {
+                                                        Text("\(item.session.score)")
+                                                            .font(.system(size: 8, weight: .bold))
+                                                            .foregroundColor(.white.opacity(0.5))
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        .frame(height: 160)
+                                        .chartXAxis {
+                                            AxisMarks(values: .automatic) { _ in
+                                                AxisValueLabel()
+                                                    .foregroundStyle(Color.white.opacity(0.25))
+                                                    .font(.system(size: 9, weight: .medium))
+                                            }
+                                        }
+                                        .chartYAxis {
+                                            AxisMarks(position: .leading) { value in
+                                                AxisGridLine()
+                                                    .foregroundStyle(Color.white.opacity(0.06))
+                                                AxisValueLabel()
+                                                    .foregroundStyle(Color.white.opacity(0.35))
+                                                    .font(.system(size: 10, weight: .medium))
+                                            }
+                                        }
+                                        .padding(14)
+                                        .background(Color.white.opacity(0.03))
+                                        .cornerRadius(14)
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 14)
+                                                .stroke(Color.white.opacity(0.06), lineWidth: 1)
+                                        )
+                                    }
+
+                                    // Colour legend
                                     HStack(spacing: 16) {
                                         ForEach(GameMode.allCases, id: \.self) { mode in
                                             HStack(spacing: 6) {
