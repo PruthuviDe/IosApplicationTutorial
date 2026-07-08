@@ -1,12 +1,5 @@
 import SwiftUI
 
-// MARK: - PrimaryButton
-/// A clean, compact, pill-shaped primary action button.
-/// Follows premium iOS mobile game interfaces:
-/// - Friendly Capsule shape with a compact, balanced width (240pt).
-/// - Rich visual depth using a soft vertical gradient of the theme color.
-/// - A thin, semi-translucent top bezel stroke (15% white) for a subtle 3D molded effect.
-/// - A soft, standard dark shadow (35% black) for a floating lift without distracting neon glows.
 struct PrimaryButton: View {
 
     let title: String
@@ -23,23 +16,22 @@ struct PrimaryButton: View {
                 .font(.system(size: 15, weight: .bold, design: .rounded))
         }
         .foregroundColor(.white)
-        .frame(width: 240) // Compact centered width (prevents stretching)
-        .padding(.vertical, 14) // Balanced, comfortable touch target height
+        .frame(width: 240) 
+        .padding(.vertical, 14) 
         .background(
-            // Soft vertical gradient for premium depth
             LinearGradient(
                 colors: [color, color.opacity(0.85)],
                 startPoint: .top,
                 endPoint: .bottom
             )
         )
-        .clipShape(Capsule()) // Friendly, premium capsule shape
+        .clipShape(Capsule()) 
         .overlay(
             Capsule()
-                .stroke(Color.white.opacity(0.15), lineWidth: 1.2) // Subtle bevel highlight
+                .stroke(Color.white.opacity(0.15), lineWidth: 1.2) 
         )
         .shadow(
-            color: Color.black.opacity(0.35), // Dark shadow for depth (no glowing neon)
+            color: Color.black.opacity(0.35), 
             radius: 5,
             x: 0,
             y: 3

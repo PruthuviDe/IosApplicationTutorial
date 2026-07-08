@@ -14,7 +14,6 @@ struct GameTile: View {
         NavigationLink(destination: destination) {
             HStack(spacing: 16) {
 
-                // Game artwork icon
                 Image(mode.imageName)
                     .resizable()
                     .aspectRatio(contentMode: .fill)
@@ -25,7 +24,6 @@ struct GameTile: View {
                             .stroke(mode.accentColor.opacity(0.30), lineWidth: 1.2)
                     )
 
-                // Title + Subtitle
                 VStack(alignment: .leading, spacing: 4) {
                     Text(mode.rawValue)
                         .font(.system(size: 16, weight: .bold, design: .rounded))
@@ -38,7 +36,6 @@ struct GameTile: View {
 
                 Spacer()
 
-                // High score layout (Clean & Modern)
                 HStack(spacing: 12) {
                     VStack(alignment: .trailing, spacing: 2) {
                         Text("BEST")

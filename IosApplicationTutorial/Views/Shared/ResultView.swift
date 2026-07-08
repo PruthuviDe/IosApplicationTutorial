@@ -1,16 +1,11 @@
 import SwiftUI
 
-// MARK: - ResultView
-/// Shared game-over screen used by all three games.
-/// Reads the current high score from SessionStore (single source of truth)
-/// so it never falls out of sync with @AppStorage values in ViewModels.
 struct ResultView: View {
 
     let mode:      GameMode
     let score:     Int
     let onRestart: () -> Void
 
-    // Single source of truth — computed from saved sessions
     @ObservedObject private var store = SessionStore.shared
     @State private var isNewBest = false
 
@@ -61,7 +56,6 @@ struct ResultView: View {
             Spacer()
 
             VStack(spacing: 20) {
-                // Reuses PrimaryButton component (Primary filled button)
                 Button(action: onRestart) {
                     PrimaryButton(
                         title: "PLAY AGAIN",
@@ -71,7 +65,6 @@ struct ResultView: View {
                 }
                 .buttonStyle(PlainButtonStyle())
 
-                // Modern borderless Share Link (Secondary clean link)
                 ShareLink(item: "I just scored \(score) on \(mode.rawValue) in GameVault — beat that! 🎮") {
                     HStack(spacing: 6) {
                         Image(systemName: "square.and.arrow.up")
@@ -96,9 +89,6 @@ struct ResultView: View {
         .ignoresSafeArea(.all)
         .toolbar(.hidden, for: .tabBar)
         .onAppear {
-            // Capture whether this score beats the previous best.
-            // Must read BEFORE the session is saved by the parent view's .onAppear
-            // (which fires after this .onAppear since ResultView is the child).
             isNewBest = score > store.highScore(for: mode)
         }
     }

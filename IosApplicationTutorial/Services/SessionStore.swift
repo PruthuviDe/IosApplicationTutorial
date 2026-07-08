@@ -20,10 +20,6 @@ class SessionStore: ObservableObject {
     func resetAll() {
         sessions = []
         persist()
-        // Set each high-score key to 0 (not removeObject) so that
-        // @AppStorage property wrappers in the game ViewModels receive
-        // the KVO/UserDefaults change notification and update in memory.
-        // removeObject() does not reliably fire @AppStorage observers.
         for mode in GameMode.allCases {
             UserDefaults.standard.set(0, forKey: mode.highScoreKey)
         }

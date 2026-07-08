@@ -11,7 +11,6 @@ struct MapTab: View {
         NavigationStack {
             ZStack {
                 if store.sessions.isEmpty {
-                    // ── Empty state ────────────────────────────────────────
                     ZStack {
                         RadialGradient(
                             colors: [Color(red: 0.20, green: 0.65, blue: 0.95).opacity(0.35), Color(red: 0.08, green: 0.09, blue: 0.14)],
@@ -58,13 +57,10 @@ struct MapTab: View {
                     )
 
                 } else {
-                    // ── Map with session pins ──────────────────────────────
                     Map(position: $cameraPosition) {
 
-                        // Blue pulsing dot showing the player's current position
                         UserAnnotation()
 
-                        // One coloured pin per game session played
                         ForEach(store.sessions) { session in
                             Annotation(
                                 session.mode.rawValue,
@@ -96,7 +92,6 @@ struct MapTab: View {
                     }
                     .mapStyle(.standard(pointsOfInterest: .all, showsTraffic: false))
                     .mapControls {
-                        // "Locate me" button — tapping re-centres on the user
                         MapUserLocationButton()
                         MapCompass()
                         MapScaleView()
@@ -110,14 +105,11 @@ struct MapTab: View {
                 SessionDetailSheet(session: session)
             }
             .onAppear {
-                // Request/re-confirm location permission every time the tab opens
                 LocationService.shared.requestPermission()
             }
         }
     }
 }
-
-// MARK: - Session Detail Sheet
 
 struct SessionDetailSheet: View {
 
