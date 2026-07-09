@@ -171,17 +171,28 @@ struct LightItUpView: View {
         let diff = vm.difficulty
 
         if diff.sequenceLength > 0 && !vm.sequenceTarget.isEmpty {
-            // Sequence mode: "Tap in order: 🟢 → 🔵 → 🟠"
+            // Sequence mode — native colored circles with arrows
             HStack(spacing: 6) {
                 Text("Tap in order:")
                     .font(.system(size: 12, weight: .semibold, design: .rounded))
                     .foregroundColor(.white.opacity(0.5))
 
                 ForEach(Array(vm.sequenceTarget.enumerated()), id: \.offset) { idx, color in
-                    Text(color.emoji)
-                        .font(.system(size: idx == vm.sequenceStep ? 26 : 20))
-                        .opacity(idx < vm.sequenceStep ? 0.25 : 1.0)
-                        .scaleEffect(idx == vm.sequenceStep ? 1.25 : 1.0)
+                    let isCurrent = idx == vm.sequenceStep
+                    let isDone    = idx < vm.sequenceStep
+                    let dotSize: CGFloat = isCurrent ? 26 : 20
+
+                    Circle()
+                        .fill(isDone ? Color.white.opacity(0.15) : color.uiColor)
+                        .frame(width: dotSize, height: dotSize)
+                        .shadow(color: isCurrent ? color.uiColor.opacity(0.7) : .clear, radius: 6)
+                        .overlay(
+                            // Ring around the current step
+                            Circle()
+                                .stroke(isCurrent ? color.uiColor : Color.clear, lineWidth: 2)
+                                .scaleEffect(1.4)
+                                .opacity(isCurrent ? 0.45 : 0)
+                        )
                         .animation(.spring(response: 0.3, dampingFraction: 0.6),
                                    value: vm.sequenceStep)
 
@@ -193,26 +204,31 @@ struct LightItUpView: View {
                 }
             }
             .padding(.horizontal, 16)
-            .padding(.vertical, 8)
+            .padding(.vertical, 10)
             .background(Color.white.opacity(0.06))
             .cornerRadius(12)
             .padding(.horizontal, 24)
             .padding(.bottom, 4)
 
         } else if diff.colorCount > 1 {
-            // Colour mode: "Tap: 🟢 Green"
-            HStack(spacing: 6) {
-                Text("Tap:")
+            // Colour mode — "Tap the ● Green card"
+            HStack(spacing: 8) {
+                Text("Tap the")
                     .font(.system(size: 12, weight: .semibold, design: .rounded))
                     .foregroundColor(.white.opacity(0.5))
-                Text(vm.targetColor.emoji)
-                    .font(.system(size: 26))
+                Circle()
+                    .fill(vm.targetColor.uiColor)
+                    .frame(width: 18, height: 18)
+                    .shadow(color: vm.targetColor.uiColor.opacity(0.7), radius: 5)
                 Text(vm.targetColor.displayName)
                     .font(.system(size: 13, weight: .bold, design: .rounded))
                     .foregroundColor(vm.targetColor.uiColor)
+                Text("card")
+                    .font(.system(size: 12, weight: .semibold, design: .rounded))
+                    .foregroundColor(.white.opacity(0.5))
             }
             .padding(.horizontal, 16)
-            .padding(.vertical, 8)
+            .padding(.vertical, 10)
             .background(vm.targetColor.uiColor.opacity(0.10))
             .cornerRadius(12)
             .padding(.horizontal, 24)

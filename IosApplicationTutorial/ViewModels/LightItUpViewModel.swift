@@ -243,7 +243,7 @@ final class LightItUpViewModel: ObservableObject {
     }
 
     private func showMilestoneBanner(diff: DifficultySnapshot) {
-        bannerMessage = "Lv.\(score / 5 + 1)!"
+        bannerMessage = "Level Up!"
         bannerColor   = diff.accentColor
         withAnimation(.easeInOut(duration: 0.35)) { showBanner = true }
         Task {

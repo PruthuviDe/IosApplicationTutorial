@@ -16,15 +16,6 @@ enum CardColor: CaseIterable, Equatable {
         }
     }
 
-    /// Emoji used in the hint bar so the player can quickly match colours.
-    var emoji: String {
-        switch self {
-        case .cyan:   return "🔵"
-        case .green:  return "🟢"
-        case .orange: return "🟠"
-        case .red:    return "🔴"
-        }
-    }
 
     /// Short display name shown alongside the emoji in the hint bar.
     var displayName: String {
