@@ -5,7 +5,6 @@ struct LightItUpView: View {
 
     @StateObject private var vm: LightItUpViewModel
 
-    /// Pass roundLength from the menu. 0 = Endless, 30/60/90 = Timed.
     init(roundLength: Int = 0) {
         _vm = StateObject(wrappedValue: LightItUpViewModel(roundLength: roundLength))
     }
@@ -27,11 +26,8 @@ struct LightItUpView: View {
         .toolbar(.hidden, for: .tabBar)
     }
 
-    // MARK: - Game Screen
-
     private var gameView: some View {
         ZStack {
-            // Background glow shifts colour with difficulty
             RadialGradient(
                 colors: [vm.difficulty.accentColor.opacity(0.20), Color.black],
                 center: .center,
@@ -58,7 +54,6 @@ struct LightItUpView: View {
                 Spacer()
             }
         }
-        // Red flash overlay on wrong tap / miss
         .overlay(
             Color.red
                 .opacity(vm.wrongFlash ? 0.28 : 0.00)
@@ -66,7 +61,6 @@ struct LightItUpView: View {
                 .allowsHitTesting(false)
                 .animation(.easeOut(duration: 0.15), value: vm.wrongFlash)
         )
-        // Score milestone banner
         .overlay(
             Group {
                 if vm.showBanner {
@@ -85,12 +79,8 @@ struct LightItUpView: View {
         .onReceive(vm.countdownTimer) { _ in vm.countdownTick() }
     }
 
-    // MARK: - HUD
-
     private var hud: some View {
         HStack(alignment: .top) {
-
-            // Score (left)
             VStack(alignment: .leading, spacing: 4) {
                 Text("SCORE")
                     .font(.system(size: 11, weight: .bold))
@@ -103,7 +93,6 @@ struct LightItUpView: View {
 
             Spacer()
 
-            // Centre: difficulty badge
             Text("Lv.\(vm.score / 5 + 1)")
                 .font(.system(size: 11, weight: .bold, design: .rounded))
                 .foregroundColor(vm.difficulty.accentColor)
@@ -116,7 +105,6 @@ struct LightItUpView: View {
 
             Spacer()
 
-            // Right: time remaining (Timed mode) OR speed (Endless mode)
             if vm.roundLength > 0 {
                 VStack(alignment: .trailing, spacing: 4) {
                     Text("TIME")
@@ -148,8 +136,6 @@ struct LightItUpView: View {
         .padding(.top, 16)
     }
 
-    // MARK: - Lives Row
-
     private var livesRow: some View {
         HStack(spacing: 6) {
             ForEach(0..<3, id: \.self) { index in
@@ -164,14 +150,11 @@ struct LightItUpView: View {
         .animation(.spring(response: 0.25, dampingFraction: 0.45), value: vm.wrongFlash)
     }
 
-    // MARK: - Hint Bar
-
     @ViewBuilder
     private var hintBar: some View {
         let diff = vm.difficulty
 
         if diff.sequenceLength > 0 && !vm.sequenceTarget.isEmpty {
-            // Sequence mode — native colored circles with arrows
             HStack(spacing: 6) {
                 Text("Tap in order:")
                     .font(.system(size: 12, weight: .semibold, design: .rounded))
@@ -187,7 +170,6 @@ struct LightItUpView: View {
                         .frame(width: dotSize, height: dotSize)
                         .shadow(color: isCurrent ? color.uiColor.opacity(0.7) : .clear, radius: 6)
                         .overlay(
-                            // Ring around the current step
                             Circle()
                                 .stroke(isCurrent ? color.uiColor : Color.clear, lineWidth: 2)
                                 .scaleEffect(1.4)
@@ -211,7 +193,6 @@ struct LightItUpView: View {
             .padding(.bottom, 4)
 
         } else if diff.colorCount > 1 {
-            // Colour mode — "Tap the ● Green card"
             HStack(spacing: 8) {
                 Text("Tap the")
                     .font(.system(size: 12, weight: .semibold, design: .rounded))
@@ -237,8 +218,6 @@ struct LightItUpView: View {
         }
     }
 
-    // MARK: - Card Grid (fixed 82×82 cards — never changes size)
-
     private var cardGrid: some View {
         LazyVGrid(columns: vm.gridColumns, spacing: 12) {
             ForEach(0..<vm.cards.count, id: \.self) { index in
@@ -247,7 +226,7 @@ struct LightItUpView: View {
 
                 RoundedRectangle(cornerRadius: 16)
                     .fill(card.isLit ? litColor : Color.white.opacity(0.06))
-                    .frame(width: 82, height: 82)   // fixed size — never changes
+                    .frame(width: 82, height: 82) 
                     .overlay(
                         RoundedRectangle(cornerRadius: 16)
                             .stroke(

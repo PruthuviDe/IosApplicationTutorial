@@ -21,7 +21,6 @@ struct LightItUpMenuView: View {
 
                 Spacer()
 
-                // Game icon + title
                 Image("light_it_up")
                     .resizable()
                     .aspectRatio(contentMode: .fill)
@@ -34,7 +33,6 @@ struct LightItUpMenuView: View {
                     .foregroundColor(.white)
                     .tracking(0.5)
 
-                // How to play — concise
                 VStack(alignment: .leading, spacing: 12) {
                     Text("HOW TO PLAY")
                         .font(.system(size: 11, weight: .bold))
@@ -55,7 +53,6 @@ struct LightItUpMenuView: View {
                         .stroke(Color.white.opacity(0.08), lineWidth: 1)
                 )
 
-                // Game mode picker
                 VStack(alignment: .leading, spacing: 12) {
                     Text("GAME MODE")
                         .font(.system(size: 11, weight: .bold))
@@ -68,7 +65,6 @@ struct LightItUpMenuView: View {
                     }
                     .pickerStyle(.segmented)
 
-                    // Round length picker — only shown in Timed mode
                     if !isEndless {
                         VStack(alignment: .leading, spacing: 8) {
                             Text("ROUND LENGTH")
@@ -98,7 +94,6 @@ struct LightItUpMenuView: View {
 
                 Spacer()
 
-                // START — passes roundLength = 0 for Endless
                 NavigationLink(destination: LightItUpView(roundLength: isEndless ? 0 : roundLength)) {
                     PrimaryButton(
                         title: "START GAME",

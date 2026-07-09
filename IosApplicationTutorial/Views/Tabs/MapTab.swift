@@ -5,7 +5,7 @@ struct MapTab: View {
 
     @ObservedObject private var store = SessionStore.shared
     @State private var selectedSession: GameSession? = nil
-    @State private var cameraPosition: MapCameraPosition = .userLocation(fallback: .automatic)
+    @State private var cameraPosition: MapCameraPosition = .automatic
 
     var body: some View {
         NavigationStack {
