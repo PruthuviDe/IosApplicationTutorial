@@ -8,8 +8,6 @@ struct MapTab: View {
     @State private var selectedSession: GameSession? = nil
     @State private var cameraPosition: MapCameraPosition = .automatic
 
-    /// Sessions with a real GPS fix — excludes sessions saved at (0,0)
-    /// which happens when location permission was denied.
     private var validSessions: [GameSession] {
         store.sessions.filter { $0.latitude != 0 || $0.longitude != 0 }
     }
