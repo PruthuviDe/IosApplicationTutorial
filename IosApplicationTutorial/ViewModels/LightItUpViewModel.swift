@@ -5,44 +5,59 @@ final class LightItUpViewModel: ObservableObject {
 
     // MARK: - Published State
 
-    @Published var cards:          [Card]      = []
-    @Published var score:          Int         = 0
-    @Published var lives:          Int         = 3
-    @Published var gameStarted:    Bool        = false
-    @Published var wrongFlash:     Bool        = false   // triggers red overlay in view
-    @Published var showBanner:     Bool        = false   // "Lv.X!" milestone banner
-    @Published var bannerMessage:  String      = ""
-    @Published var bannerColor:    Color       = .cyan
+    @Published var cards:         [Card]   = []
+    @Published var score:         Int      = 0
+    @Published var lives:         Int      = 3
+    @Published var timeRemaining: Int      = 0
+    @Published var gameStarted:   Bool     = false
+    @Published var wrongFlash:    Bool     = false
+    @Published var showBanner:    Bool     = false
+    @Published var bannerMessage: String   = ""
+    @Published var bannerColor:   Color    = .cyan
 
-    /// The target colour shown in the hint bar (colour / simple mode).
-    @Published var targetColor: CardColor = .cyan
+    /// Target colour shown in the hint bar (colour mode).
+    @Published var targetColor:     CardColor    = .cyan
+    /// Sequence the player must tap through (sequence mode).
+    @Published var sequenceTarget:  [CardColor]  = []
+    /// Which step of the sequence the player is on.
+    @Published var sequenceStep:    Int          = 0
 
-    /// The colour sequence the player must tap through (sequence mode).
-    @Published var sequenceTarget: [CardColor] = []
-    /// Which step of the sequence the player is currently on.
-    @Published var sequenceStep:   Int         = 0
+    // MARK: - Game Configuration
 
-    // MARK: - Timer
+    /// Round length in seconds. 0 = Endless mode (no timer).
+    let roundLength: Int
 
-    /// Fires every 0.4 s. Accumulated against `difficulty.litWindow`.
-    let lightTimer = Timer.publish(every: 0.4, on: .main, in: .common).autoconnect()
+    // MARK: - Timers
+
+    /// Fires every 0.4 s — drives the card light/dark cycle.
+    let lightTimer     = Timer.publish(every: 0.4, on: .main, in: .common).autoconnect()
+    /// Fires every 1 s — used only when roundLength > 0 (Timed mode).
+    let countdownTimer = Timer.publish(every: 1,   on: .main, in: .common).autoconnect()
 
     // MARK: - Internal Bookkeeping
 
     private var lightAccumulator = 0.0
-    private var lastCardCount    = 3       // detects when grid should grow
+    private var lastCardCount    = 3
+
+    // MARK: - Init
+
+    init(roundLength: Int = 0) {
+        self.roundLength = roundLength
+    }
 
     // MARK: - Computed
 
-    /// Difficulty is always derived from the current score — never fixed stages.
+    /// All difficulty parameters are derived from the current score.
     var difficulty: DifficultySnapshot { .compute(score: score) }
 
-    var isGameOver: Bool { lives == 0 }
+    var isGameOver: Bool {
+        lives == 0 || (roundLength > 0 && timeRemaining == 0 && gameStarted)
+    }
 
     var gridColumns: [GridItem] {
         // 4 cards → 2×2 square; everything else → 3 columns
         let cols = difficulty.cardCount == 4 ? 2 : 3
-        return Array(repeating: GridItem(.flexible()), count: cols)
+        return Array(repeating: GridItem(.fixed(82)), count: cols)
     }
 
     // MARK: - Game Control
@@ -50,6 +65,7 @@ final class LightItUpViewModel: ObservableObject {
     func startGame() {
         score            = 0
         lives            = 3
+        timeRemaining    = roundLength
         lightAccumulator = 0
         lastCardCount    = 3
         wrongFlash       = false
@@ -63,13 +79,20 @@ final class LightItUpViewModel: ObservableObject {
 
     func restart() { startGame() }
 
-    // MARK: - Timer Tick
+    // MARK: - Timer Ticks
 
+    /// Called every 1 s in Timed mode. Does nothing in Endless mode.
+    func countdownTick() {
+        guard gameStarted && roundLength > 0 && timeRemaining > 0 else { return }
+        timeRemaining -= 1
+    }
+
+    /// Called every 0.4 s — drives the light/dark cycle for cards.
     func lightTick() {
         guard gameStarted && !isGameOver else { return }
         let diff = difficulty
 
-        // Grid grows when score crosses the next threshold — show a banner.
+        // Grid grows when score crosses the next threshold.
         if diff.cardCount != lastCardCount {
             lastCardCount    = diff.cardCount
             cards            = makeCards(count: diff.cardCount)
@@ -107,24 +130,22 @@ final class LightItUpViewModel: ObservableObject {
         let diff = difficulty
 
         if diff.sequenceLength > 0 && !sequenceTarget.isEmpty {
-            // ── Sequence mode ─────────────────────────────────────────
+            // ── Sequence mode ──────────────────────────────────────────
             let tapped   = cards[index].color
             let expected = sequenceTarget[sequenceStep]
 
             if tapped == expected {
-                // Correct step — dim this card and advance.
                 cards[index].isLit = false
                 sequenceStep      += 1
                 lightAccumulator   = 0   // reset timer so player has time for next step
 
                 if sequenceStep >= sequenceTarget.count {
-                    // Entire sequence complete → bonus points.
+                    // Sequence complete — award bonus points.
                     score         += sequenceTarget.count
                     sequenceTarget = []
                     sequenceStep   = 0
                 }
             } else {
-                // Wrong colour in sequence.
                 lives -= 1
                 flashWrong()
                 clearAllLit()
@@ -133,7 +154,7 @@ final class LightItUpViewModel: ObservableObject {
             }
 
         } else {
-            // ── Simple / colour mode ───────────────────────────────────
+            // ── Simple / colour mode ────────────────────────────────────
             let tapped = cards[index].color
 
             if diff.colorCount > 1 && tapped != targetColor {
@@ -142,7 +163,6 @@ final class LightItUpViewModel: ObservableObject {
                 flashWrong()
                 clearAllLit()
             } else {
-                // Correct tap.
                 cards[index].isLit = false
                 score += 1
             }
@@ -163,12 +183,11 @@ final class LightItUpViewModel: ObservableObject {
 
     // MARK: - Private Helpers
 
-    /// Decides which cards to light up based on the current difficulty mode.
     private func lightNewCards(diff: DifficultySnapshot) {
         let available = Array(CardColor.allCases.prefix(diff.colorCount))
 
         if diff.sequenceLength > 0 {
-            // Sequence mode: generate a unique-colour sequence, light one card per colour.
+            // Sequence mode: unique-colour sequence, one card lit per colour.
             let seqLen     = min(diff.sequenceLength, available.count)
             sequenceTarget = available.shuffled().prefix(seqLen).map { $0 }
             sequenceStep   = 0
@@ -182,25 +201,23 @@ final class LightItUpViewModel: ObservableObject {
             }
 
         } else if diff.colorCount > 1 {
-            // Colour mode: one target card + optional decoys.
+            // Colour mode: one target + optional decoys.
             let tgt     = available.randomElement()!
             targetColor = tgt
 
             var indices = cards.indices.shuffled()
-            // Guarantee at least one card of the target colour.
             if let first = indices.first {
                 cards[first].isLit = true
                 cards[first].color = tgt
                 indices.removeFirst()
             }
-            // Extra cards (litCount > 1) become decoys with random colours.
             for i in 0..<min(diff.litCount - 1, indices.count) {
                 cards[indices[i]].isLit = true
                 cards[indices[i]].color = available.randomElement()!
             }
 
         } else {
-            // Simple mode: light up litCount cards, all the same colour.
+            // Simple mode: light up litCount cards, all cyan.
             let indices = cards.indices.shuffled()
             for i in 0..<min(diff.litCount, indices.count) {
                 cards[indices[i]].isLit  = true
@@ -217,7 +234,6 @@ final class LightItUpViewModel: ObservableObject {
         for i in 0..<cards.count { cards[i].isLit = false }
     }
 
-    /// Flashes the red overlay for 0.4 s.
     private func flashWrong() {
         wrongFlash = true
         Task {
@@ -226,7 +242,6 @@ final class LightItUpViewModel: ObservableObject {
         }
     }
 
-    /// Shows the "Lv.X!" banner for 1.2 s when the grid grows.
     private func showMilestoneBanner(diff: DifficultySnapshot) {
         bannerMessage = "Lv.\(score / 5 + 1)!"
         bannerColor   = diff.accentColor

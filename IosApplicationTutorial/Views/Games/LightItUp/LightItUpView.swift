@@ -3,7 +3,12 @@ import Combine
 
 struct LightItUpView: View {
 
-    @StateObject private var vm = LightItUpViewModel()
+    @StateObject private var vm: LightItUpViewModel
+
+    /// Pass roundLength from the menu. 0 = Endless, 30/60/90 = Timed.
+    init(roundLength: Int = 0) {
+        _vm = StateObject(wrappedValue: LightItUpViewModel(roundLength: roundLength))
+    }
 
     var body: some View {
         Group {
@@ -26,7 +31,7 @@ struct LightItUpView: View {
 
     private var gameView: some View {
         ZStack {
-            // Background: ambient glow shifts colour with difficulty
+            // Background glow shifts colour with difficulty
             RadialGradient(
                 colors: [vm.difficulty.accentColor.opacity(0.20), Color.black],
                 center: .center,
@@ -53,7 +58,7 @@ struct LightItUpView: View {
                 Spacer()
             }
         }
-        // Red flash when the player taps wrong or misses a card
+        // Red flash overlay on wrong tap / miss
         .overlay(
             Color.red
                 .opacity(vm.wrongFlash ? 0.28 : 0.00)
@@ -61,7 +66,7 @@ struct LightItUpView: View {
                 .allowsHitTesting(false)
                 .animation(.easeOut(duration: 0.15), value: vm.wrongFlash)
         )
-        // Score milestone banner ("Lv.2!", "Lv.3!"…)
+        // Score milestone banner
         .overlay(
             Group {
                 if vm.showBanner {
@@ -76,14 +81,16 @@ struct LightItUpView: View {
             .allowsHitTesting(false)
         )
         .onAppear  { vm.startGame() }
-        .onReceive(vm.lightTimer) { _ in vm.lightTick() }
+        .onReceive(vm.lightTimer)     { _ in vm.lightTick() }
+        .onReceive(vm.countdownTimer) { _ in vm.countdownTick() }
     }
 
-    // MARK: - HUD (Score | Level badge | Speed)
+    // MARK: - HUD
 
     private var hud: some View {
         HStack(alignment: .top) {
-            // Score
+
+            // Score (left)
             VStack(alignment: .leading, spacing: 4) {
                 Text("SCORE")
                     .font(.system(size: 11, weight: .bold))
@@ -96,7 +103,7 @@ struct LightItUpView: View {
 
             Spacer()
 
-            // Difficulty badge — advances automatically with score
+            // Centre: difficulty badge
             Text("Lv.\(vm.score / 5 + 1)")
                 .font(.system(size: 11, weight: .bold, design: .rounded))
                 .foregroundColor(vm.difficulty.accentColor)
@@ -109,22 +116,39 @@ struct LightItUpView: View {
 
             Spacer()
 
-            // Speed indicator so the player can see it getting faster
-            VStack(alignment: .trailing, spacing: 4) {
-                Text("SPEED")
-                    .font(.system(size: 11, weight: .bold))
-                    .foregroundColor(.white.opacity(0.4))
-                Text("\(String(format: "%.1f", vm.difficulty.litWindow))s")
-                    .font(.system(size: 20, weight: .black, design: .rounded))
-                    .foregroundColor(.white)
+            // Right: time remaining (Timed mode) OR speed (Endless mode)
+            if vm.roundLength > 0 {
+                VStack(alignment: .trailing, spacing: 4) {
+                    Text("TIME")
+                        .font(.system(size: 11, weight: .bold))
+                        .foregroundColor(.white.opacity(0.4))
+                    Text("\(vm.timeRemaining)s")
+                        .font(.system(size: 32, weight: .black, design: .rounded))
+                        .foregroundColor(vm.timeRemaining <= 5
+                                         ? Color(red: 0.92, green: 0.26, blue: 0.35)
+                                         : .white)
+                        .scaleEffect(vm.timeRemaining <= 5 ? 1.2 : 1.0)
+                        .animation(.spring(response: 0.3, dampingFraction: 0.5),
+                                   value: vm.timeRemaining)
+                }
+                .frame(width: 80, alignment: .trailing)
+            } else {
+                VStack(alignment: .trailing, spacing: 4) {
+                    Text("SPEED")
+                        .font(.system(size: 11, weight: .bold))
+                        .foregroundColor(.white.opacity(0.4))
+                    Text("\(String(format: "%.1f", vm.difficulty.litWindow))s")
+                        .font(.system(size: 20, weight: .black, design: .rounded))
+                        .foregroundColor(.white)
+                }
+                .frame(width: 80, alignment: .trailing)
             }
-            .frame(width: 80, alignment: .trailing)
         }
         .padding(.horizontal, 24)
         .padding(.top, 16)
     }
 
-    // MARK: - Lives Row (hearts pulse on wrong tap)
+    // MARK: - Lives Row
 
     private var livesRow: some View {
         HStack(spacing: 6) {
@@ -142,15 +166,12 @@ struct LightItUpView: View {
 
     // MARK: - Hint Bar
 
-    /// Shows nothing in simple mode (score < 10).
-    /// Shows the target colour in colour mode (score 10–29).
-    /// Shows the full tap sequence with the current step highlighted (score 30+).
     @ViewBuilder
     private var hintBar: some View {
         let diff = vm.difficulty
 
         if diff.sequenceLength > 0 && !vm.sequenceTarget.isEmpty {
-            // Sequence hint: e.g.  "Tap in order:  🟢 → 🟠 → 🔵"
+            // Sequence mode: "Tap in order: 🟢 → 🔵 → 🟠"
             HStack(spacing: 6) {
                 Text("Tap in order:")
                     .font(.system(size: 12, weight: .semibold, design: .rounded))
@@ -179,7 +200,7 @@ struct LightItUpView: View {
             .padding(.bottom, 4)
 
         } else if diff.colorCount > 1 {
-            // Single-colour hint: e.g.  "Tap: 🟢 Green"
+            // Colour mode: "Tap: 🟢 Green"
             HStack(spacing: 6) {
                 Text("Tap:")
                     .font(.system(size: 12, weight: .semibold, design: .rounded))
@@ -200,20 +221,17 @@ struct LightItUpView: View {
         }
     }
 
-    // MARK: - Card Grid
+    // MARK: - Card Grid (fixed 82×82 cards — never changes size)
 
     private var cardGrid: some View {
-        // Card height shrinks slightly for larger grids so everything fits on screen
-        let cardHeight: CGFloat = vm.difficulty.cardCount <= 6 ? 90 : 72
-
-        return LazyVGrid(columns: vm.gridColumns, spacing: 12) {
+        LazyVGrid(columns: vm.gridColumns, spacing: 12) {
             ForEach(0..<vm.cards.count, id: \.self) { index in
-                let card = vm.cards[index]
+                let card     = vm.cards[index]
                 let litColor = card.color.uiColor
 
                 RoundedRectangle(cornerRadius: 16)
                     .fill(card.isLit ? litColor : Color.white.opacity(0.06))
-                    .frame(height: cardHeight)
+                    .frame(width: 82, height: 82)   // fixed size — never changes
                     .overlay(
                         RoundedRectangle(cornerRadius: 16)
                             .stroke(
