@@ -62,16 +62,17 @@ final class TapFrenzyViewModel: ObservableObject {
         }
         if timeRemaining == bonusBurstStart     { isBonusBurst = true }
         if timeRemaining == bonusBurstStart - 2 { isBonusBurst = false }
+        if timeRemaining == 0                   { isBonusBurst = false }
+    }
 
-        if timeRemaining == 0 {
-            let loc = LocationService.shared.coordinate
-            SessionStore.shared.save(session: GameSession(
-                mode: .tapFrenzy,
-                score: score,
-                latitude: loc.latitude,
-                longitude: loc.longitude
-            ))
-        }
+    func saveSession() {
+        let loc = LocationService.shared.coordinate
+        SessionStore.shared.save(session: GameSession(
+            mode:      .tapFrenzy,
+            score:     score,
+            latitude:  loc.latitude,
+            longitude: loc.longitude
+        ))
     }
 
     func restart() {

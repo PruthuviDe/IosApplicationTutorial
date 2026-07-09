@@ -13,6 +13,8 @@ struct TapFrenzyView: View {
                     score:     vm.score,
                     onRestart: { vm.restart() }
                 )
+                .onAppear { vm.saveSession() }
+                .toolbar(.hidden, for: .tabBar)
             } else {
                 ZStack {
                     RadialGradient(
