@@ -28,7 +28,6 @@ class LocationService: NSObject, ObservableObject, CLLocationManagerDelegate {
 
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         currentLocation = locations.last?.coordinate
-        // Keep updating continuously so MapKit's UserAnnotation and locate-me button stay live
     }
 
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {

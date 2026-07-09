@@ -3,14 +3,22 @@ import MapKit
 
 struct MapTab: View {
 
+
     @ObservedObject private var store = SessionStore.shared
     @State private var selectedSession: GameSession? = nil
     @State private var cameraPosition: MapCameraPosition = .automatic
 
+    /// Sessions with a real GPS fix — excludes sessions saved at (0,0)
+    /// which happens when location permission was denied.
+    private var validSessions: [GameSession] {
+        store.sessions.filter { $0.latitude != 0 || $0.longitude != 0 }
+    }
+
+
     var body: some View {
         NavigationStack {
             ZStack {
-                if store.sessions.isEmpty {
+                if validSessions.isEmpty {
                     ZStack {
                         RadialGradient(
                             colors: [Color(red: 0.20, green: 0.65, blue: 0.95).opacity(0.35), Color(red: 0.08, green: 0.09, blue: 0.14)],
@@ -61,7 +69,7 @@ struct MapTab: View {
 
                         UserAnnotation()
 
-                        ForEach(store.sessions) { session in
+                        ForEach(validSessions) { session in
                             Annotation(
                                 session.mode.rawValue,
                                 coordinate: CLLocationCoordinate2D(
