@@ -4,16 +4,10 @@ import Combine
 struct QuizView: View {
 
     @StateObject private var viewModel = QuizViewModel()
-    @State private var currentAnswers: [String] = []
-    @AppStorage("quizTimerSeconds") private var timerSeconds = 0
 
     @State private var flashColor: Color = .clear
     @State private var shakeOffset: CGFloat = 0
-    @State private var isAnswering = false
-    @State private var timeRemaining: Int = 0
 
-    @State private var revealAnswers: (selected: String, correct: String)? = nil
-    
     private let countdown = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
     var body: some View {
@@ -34,15 +28,7 @@ struct QuizView: View {
                         score:     viewModel.score,
                         onRestart: { viewModel.playAgain() }
                     )
-                    .onAppear {
-                        let loc = LocationService.shared.coordinate
-                        SessionStore.shared.save(session: GameSession(
-                            mode: .quizRush,
-                            score: viewModel.score,
-                            latitude: loc.latitude,
-                            longitude: loc.longitude
-                        ))
-                    }
+                    .onAppear { viewModel.saveSession() }
                 } else {
                     questionView
                 }
@@ -61,24 +47,10 @@ struct QuizView: View {
 
         .task {
             await viewModel.load()
-            currentAnswers = viewModel.currentQuestion?.decodedShuffledAnswers() ?? []
-            timeRemaining = timerSeconds
-        }
-        .onChange(of: viewModel.currentIndex) {
-            currentAnswers = viewModel.currentQuestion?.decodedShuffledAnswers() ?? []
-            timeRemaining = timerSeconds
-            revealAnswers = nil
         }
         .onReceive(countdown) { _ in
-            guard timerSeconds > 0,
-                  !isAnswering,
-                  case .loaded = viewModel.viewState,
-                  !viewModel.isFinished else { return }
-
-            if timeRemaining > 0 {
-                timeRemaining -= 1
-            } else {
-                isAnswering = true
+            if viewModel.isTimedOut {
+                viewModel.handleTimeout()
                 withAnimation(.easeIn(duration: 0.15)) {
                     flashColor = Color.red.opacity(0.20)
                 }
@@ -86,31 +58,32 @@ struct QuizView: View {
                     try? await Task.sleep(for: .seconds(0.5))
                     await MainActor.run {
                         withAnimation { flashColor = .clear }
-                        viewModel.answer("")
-                        isAnswering = false
+                        viewModel.advanceAfterTimeout()
                     }
                 }
+            } else {
+                viewModel.tickTimer()
             }
         }
     }
 
     var timerColor: Color {
-        guard timerSeconds > 0 else { return .clear }
-        let ratio = Double(timeRemaining) / Double(timerSeconds)
+        guard viewModel.timerSeconds > 0 else { return .clear }
+        let ratio = Double(viewModel.timeRemaining) / Double(viewModel.timerSeconds)
         if ratio > 0.5 { return Color(red: 0.20, green: 0.83, blue: 0.52) } 
         if ratio > 0.25 { return Color(red: 0.95, green: 0.60, blue: 0.20) }
         return Color(red: 0.92, green: 0.26, blue: 0.35)
     }
 
     func answerBackground(for answer: String) -> Color {
-        guard let reveal = revealAnswers else { return Color.white.opacity(0.04) }
+        guard let reveal = viewModel.revealState else { return Color.white.opacity(0.04) }
         if answer == reveal.correct  { return Color.green.opacity(0.16) }
         if answer == reveal.selected { return Color.red.opacity(0.16) }
         return Color.white.opacity(0.02)
     }
 
     func answerBorderColor(for answer: String) -> Color {
-        guard let reveal = revealAnswers else { return Color.white.opacity(0.18) }
+        guard let reveal = viewModel.revealState else { return Color.white.opacity(0.18) }
         if answer == reveal.correct  { return Color.green.opacity(0.6) }
         if answer == reveal.selected { return Color.red.opacity(0.6) }
         return Color.white.opacity(0.08)
@@ -210,15 +183,15 @@ struct QuizView: View {
             .padding(.horizontal, 24)
             .padding(.top, 16)
 
-            if timerSeconds > 0 {
+            if viewModel.timerSeconds > 0 {
                 GeometryReader { geo in
                     ZStack(alignment: .leading) {
                         RoundedRectangle(cornerRadius: 4)
                             .fill(Color.white.opacity(0.08))
                         RoundedRectangle(cornerRadius: 4)
                             .fill(timerColor)
-                            .frame(width: geo.size.width * CGFloat(timeRemaining) / CGFloat(timerSeconds))
-                            .animation(.linear(duration: 1.0), value: timeRemaining)
+                            .frame(width: geo.size.width * CGFloat(viewModel.timeRemaining) / CGFloat(viewModel.timerSeconds))
+                            .animation(.linear(duration: 1.0), value: viewModel.timeRemaining)
                     }
                 }
                 .frame(height: 5)
@@ -238,13 +211,11 @@ struct QuizView: View {
                 .frame(maxHeight: 24)
 
             VStack(spacing: 12) {
-                ForEach(currentAnswers, id: \.self) { answer in
+                ForEach(viewModel.currentAnswers, id: \.self) { answer in
                     Button {
-                        guard !isAnswering else { return }
-                        isAnswering = true
+                        guard !viewModel.isAnswering else { return }
 
-                        let correct = viewModel.currentQuestion?.decodedCorrectAnswer
-                        let isCorrect = answer == correct
+                        let isCorrect = viewModel.submitAnswer(answer)
 
                         if isCorrect {
                             withAnimation(.easeIn(duration: 0.15)) {
@@ -255,8 +226,7 @@ struct QuizView: View {
                                 await MainActor.run {
                                     withAnimation { flashColor = .clear }
                                     shakeOffset = 0
-                                    viewModel.answer(answer)
-                                    isAnswering = false
+                                    viewModel.advanceAfterAnswer(answer)
                                 }
                             }
                         } else {
@@ -266,7 +236,6 @@ struct QuizView: View {
                             withAnimation(.easeInOut(duration: 0.06).repeatCount(5, autoreverses: true)) {
                                 shakeOffset = 12
                             }
-                            revealAnswers = (selected: answer, correct: correct ?? "")
                             Task {
                                 try? await Task.sleep(for: .seconds(0.5))
                                 await MainActor.run {
@@ -275,8 +244,7 @@ struct QuizView: View {
                                 }
                                 try? await Task.sleep(for: .seconds(1.0))
                                 await MainActor.run {
-                                    viewModel.answer(answer)
-                                    isAnswering = false
+                                    viewModel.advanceAfterAnswer(answer)
                                 }
                             }
                         }
@@ -292,7 +260,7 @@ struct QuizView: View {
                             .cornerRadius(16)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 16)
-                                    .stroke(answerBorderColor(for: answer), lineWidth: revealAnswers != nil ? 1.5 : 1)
+                                    .stroke(answerBorderColor(for: answer), lineWidth: viewModel.revealState != nil ? 1.5 : 1)
                             )
                     }
                 }
