@@ -82,13 +82,19 @@ IosApplicationTutorial/
 │   └── IosApplicationTutorialApp.swift     # App entry point, TabView shell
 │
 ├── Models/
-│   ├── GameMode.swift                       # Enum: .tapFrenzy, .lightItUp, .quizRush
-│   │                                        # Properties: icon, imageName, accentColor, subtitle
-│   ├── GameSession.swift                    # Struct: id, mode, score, timestamp, lat, lon
-│   └── QuizQuestion.swift                   # Codable struct + HTML entity decoder
+│   ├── Card.swift                            # Struct: id, isLit, CardColor enum
+│   ├── DifficultySnapshot.swift              # Score-based difficulty algorithm for Light It Up
+│   ├── GameMode.swift                        # Enum: .tapFrenzy, .lightItUp, .quizRush
+│   │                                         # Properties: icon, imageName, accentColor, subtitle
+│   ├── GameSession.swift                     # Struct: id, mode, score, timestamp, lat, lon
+│   ├── QuizQuestion.swift                    # Codable struct + HTML entity decoder
+│   └── TapButtonType.swift                   # Enum: .normal, .bonus, .trap for Tap Frenzy
 │
 ├── ViewModels/
-│   └── QuizViewModel.swift                  # @Published state, async load(), answer()
+│   ├── TapFrenzyViewModel.swift             # Tap game logic, combo system, burst mode
+│   ├── LightItUpViewModel.swift             # Grid game logic, progressive difficulty
+│   ├── QuizViewModel.swift                  # Quiz state, async load(), answer()
+│   └── StatsViewModel.swift                 # Bridges SessionStore → StatsTab
 │
 ├── Services/
 │   ├── LocationService.swift                # CLLocationManager wrapper, .coordinate
@@ -107,11 +113,14 @@ IosApplicationTutorial/
 │   │   ├── TapFrenzy/
 │   │   │   └── TapFrenzyView.swift          # Tap game with combos, traps, burst mode
 │   │   ├── LightItUp/
-│   │   │   ├── LightItUpMenuView.swift      # Round length selector
-│   │   │   └── LightItUpView.swift          # Grid memory game, 4 levels
+│   │   │   ├── LightItUpMenuView.swift      # Mode + round length selector
+│   │   │   └── LightItUpView.swift          # Grid game, progressive difficulty
 │   │   └── QuizRush/
 │   │       ├── QuizMenuView.swift           # Category, difficulty, amount, timer
 │   │       └── QuizView.swift               # Trivia game with streak scoring
+│   │
+│   ├── Shared/
+│   │   └── ResultView.swift                 # Game over screen, shared by all 3 games
 │   │
 │   └── Components/
 │       ├── GameTile.swift                   # Home screen game card with artwork
@@ -137,7 +146,7 @@ IosApplicationTutorial/
 | 10-second timer | `Timer.publish` countdown with live display |
 | Score counter | Increments per tap, displayed prominently |
 | Game Over screen | Final score display after time expires |
-| High Score | Persisted via `@AppStorage` across sessions |
+| High Score | Computed from `SessionStore` — single source of truth |
 | **Bonus: Combo system** | Rapid taps stack multipliers for extra points |
 | **Bonus: Trap buttons** | Button changes type (green = bonus, grey = trap) |
 | **Bonus: Moving button** | Target relocates randomly for increasing difficulty |
@@ -150,12 +159,14 @@ IosApplicationTutorial/
 
 | Feature | Description |
 |---|---|
-| Grid mechanic | Cards in an expanding grid; one illuminates briefly |
-| Reaction windows | Time-to-tap shortens as level increases |
-| Level progression | L1 (2x2) -> L4 (4x4) throughout the round |
+| Grid mechanic | Cards in a fixed-size grid; one or more illuminate briefly |
+| Progressive difficulty | Score-based algorithm — `cardCount`, `litWindow`, `colorCount` all scale with score |
+| Multi-colour cards | Cyan, green, orange, red — unlocks at score 10+ |
+| Sequence mode | At score 30+, tap cards in a specific colour order |
+| Timed + Endless modes | Player chooses between countdown timer or infinite play |
 | Lives system | 3 lives — miss or mis-tap costs a life |
-| High Score | Persisted per difficulty via `@AppStorage` |
-| Menu screen | Round length selector (30s / 60s / 90s) |
+| High Score | Computed from `SessionStore` — single source of truth |
+| Menu screen | Mode selector (Timed/Endless) + round length picker |
 
 ---
 
@@ -228,7 +239,7 @@ open IosApplicationTutorial.xcodeproj
 | **Quiz Rush offline** | No offline fallback — shows an error screen if the OpenTDB API is unreachable |
 | **Location accuracy** | Uses `kCLLocationAccuracyHundredMeters` to preserve battery; pins may appear slightly offset |
 | **Session storage limit** | All sessions stored in UserDefaults — not suitable for very large volumes (1000+ sessions) |
-| **ViewModels scope** | Tap Frenzy and Light It Up manage game state via `@State` in the view, not a ViewModel |
+| **ViewModels scope** | All 3 games use dedicated ViewModels; minor logic remains in QuizView for animation timing |
 | **No user profile** | Player name is editable in Settings and persists via `@AppStorage` — no authentication system |
 
 ---

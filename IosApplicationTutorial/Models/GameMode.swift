@@ -5,13 +5,6 @@ enum GameMode: String, Codable, CaseIterable {
     case lightItUp  = "Light It Up"
     case quizRush   = "Quiz Rush"
 
-    var highScoreKey: String {
-        switch self {
-        case .tapFrenzy: return "tapFrenzyHighScore"
-        case .lightItUp: return "lightItUpHighScore"
-        case .quizRush:  return "quizRushHighScore"
-        }
-    }
 
     var icon: String {
         switch self {

@@ -20,9 +20,6 @@ class SessionStore: ObservableObject {
     func resetAll() {
         sessions = []
         persist()
-        for mode in GameMode.allCases {
-            UserDefaults.standard.set(0, forKey: mode.highScoreKey)
-        }
     }
 
     var totalGamesPlayed: Int { sessions.count }
