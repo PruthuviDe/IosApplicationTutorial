@@ -1,7 +1,6 @@
 import SwiftUI
 import Combine
 
-// Time-based level snapshot used in Timed mode (matches lecture spec L1-L4)
 struct TimedLevelSnapshot {
     let level:       Int
     let cardCount:   Int
@@ -10,13 +9,10 @@ struct TimedLevelSnapshot {
     let colorCount:  Int
     let accentColor: Color
 
-    // Returns the spec-defined level for elapsed seconds in a 60s round.
-    // Scales proportionally if roundLength != 60.
     static func compute(timeRemaining: Int, roundLength: Int) -> TimedLevelSnapshot {
         let elapsed = roundLength - timeRemaining
         let fraction = roundLength > 0 ? Double(elapsed) / Double(roundLength) : 0
 
-        // Map to 4 levels across the round duration (0-25%, 25-50%, 50-75%, 75-100%)
         let level: Int
         switch fraction {
         case ..<0.25: level = 1
@@ -64,26 +60,21 @@ final class LightItUpViewModel: ObservableObject {
 
     private var lightAccumulator  = 0.0
     private var lastCardCount     = 3
-    private var lastTimedLevel    = 0   // tracks level changes in timed mode
+    private var lastTimedLevel    = 0
 
     init(roundLength: Int = 0) {
         self.roundLength = roundLength
     }
 
-    /// In Endless mode use the score-based algorithm.
-    /// In Timed mode use the spec's L1–L4 time-based algorithm.
     var difficulty: DifficultySnapshot { .compute(score: score) }
 
     var timedLevel: TimedLevelSnapshot {
         TimedLevelSnapshot.compute(timeRemaining: timeRemaining, roundLength: roundLength)
     }
 
-    /// The level number shown in the HUD (timed: 1-4, endless: score-derived)
     var levelNumber: Int {
         roundLength > 0 ? timedLevel.level : (score / 5 + 1)
     }
-
-    /// The accent colour for the current level (works for both modes)
     var levelAccentColor: Color {
         roundLength > 0 ? timedLevel.accentColor : difficulty.accentColor
     }
@@ -123,24 +114,20 @@ final class LightItUpViewModel: ObservableObject {
     func lightTick() {
         guard gameStarted && !isGameOver else { return }
 
-        // Choose the correct difficulty source
         let cardCount:  Int
         let litWindow:  Double
         let litCount:   Int
         let colorCount: Int
 
         if roundLength > 0 {
-            // TIMED MODE: use spec's L1-L4 time-based levels
             let tl = timedLevel
             cardCount  = tl.cardCount
             litWindow  = tl.litWindow
             litCount   = tl.litCount
             colorCount = tl.colorCount
 
-            // Fire a level-up banner when the level number increases
             if tl.level != lastTimedLevel {
                 lastTimedLevel = tl.level
-                // Rebuild grid for the new level
                 lastCardCount = cardCount
                 cards         = makeCards(count: cardCount)
                 lightAccumulator = 0
@@ -150,7 +137,6 @@ final class LightItUpViewModel: ObservableObject {
                 return
             }
         } else {
-            // ENDLESS MODE: use score-based DifficultySnapshot
             let diff = difficulty
             cardCount  = diff.cardCount
             litWindow  = diff.litWindow
@@ -185,9 +171,8 @@ final class LightItUpViewModel: ObservableObject {
 
         guard lives > 0 else { return }
 
-        // Light cards using current mode's parameters
         let availableColors = Array(CardColor.allCases.prefix(colorCount))
-        let seqLen = roundLength > 0 ? 0 : difficulty.sequenceLength // Sequence only in endless mode
+        let seqLen = roundLength > 0 ? 0 : difficulty.sequenceLength
         lightNewCardsRaw(litCount: litCount, colorCount: colorCount, availableColors: availableColors, sequenceLength: seqLen)
     }
 
@@ -286,7 +271,6 @@ final class LightItUpViewModel: ObservableObject {
         }
     }
 
-    /// Generic card lighter — used by both timed and endless modes
     private func lightNewCardsRaw(litCount: Int, colorCount: Int, availableColors: [CardColor], sequenceLength: Int) {
         if sequenceLength > 0 {
             let seqLen     = min(sequenceLength, availableColors.count)

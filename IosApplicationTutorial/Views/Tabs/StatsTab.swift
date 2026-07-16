@@ -52,7 +52,6 @@ struct StatsTab: View {
                             .padding(.top, 60)
                         } else {
                             VStack(spacing: 32) {
-                                // ── Stat Widgets ──────────────────────────────
                                 let filteredCount = selectedGame == "All"
                                     ? store.totalGamesPlayed
                                     : store.sessions.filter { $0.mode.rawValue == selectedGame }.count
@@ -96,7 +95,6 @@ struct StatsTab: View {
                                 }
                                 .padding(.horizontal, 24)
 
-                                // ── Personal Bests per mode ───────────────────
                                 if selectedGame == "All" {
                                     VStack(alignment: .leading, spacing: 12) {
                                         Text("PERSONAL BESTS")
