@@ -52,21 +52,107 @@ struct StatsTab: View {
                             .padding(.top, 60)
                         } else {
                             VStack(spacing: 32) {
+                                // ── Stat Widgets ──────────────────────────────
+                                let filteredCount = selectedGame == "All"
+                                    ? store.totalGamesPlayed
+                                    : store.sessions.filter { $0.mode.rawValue == selectedGame }.count
+
+                                let bestScore: Int = {
+                                    if selectedGame == "All" {
+                                        return store.sessions.map { $0.score }.max() ?? 0
+                                    } else if let mode = GameMode.allCases.first(where: { $0.rawValue == selectedGame }) {
+                                        return store.highScore(for: mode)
+                                    }
+                                    return 0
+                                }()
+
                                 LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 16) {
                                     StatWidget(
                                         title: "Games Played",
-                                        value: "\(selectedGame == "All" ? store.totalGamesPlayed : store.sessions.filter { $0.mode.rawValue == selectedGame }.count)",
+                                        value: "\(filteredCount)",
                                         icon: "gamecontroller.fill",
                                         color: .cyan
                                     )
                                     StatWidget(
-                                        title: "High Score",
-                                        value: selectedGame == "All" ? "\(store.totalScore)" : "\(store.highScore(for: GameMode.allCases.first(where: { $0.rawValue == selectedGame }) ?? .tapFrenzy))",
+                                        title: "Best Score",
+                                        value: "\(bestScore)",
                                         icon: "trophy.fill",
+                                        color: .yellow
+                                    )
+                                    StatWidget(
+                                        title: "Day Streak",
+                                        value: "\(store.activeStreak)",
+                                        icon: "flame.fill",
+                                        color: .orange
+                                    )
+                                    StatWidget(
+                                        title: "Total Score",
+                                        value: selectedGame == "All"
+                                            ? "\(store.totalScore)"
+                                            : "\(store.sessions.filter { $0.mode.rawValue == selectedGame }.map { $0.score }.reduce(0, +))",
+                                        icon: "chart.bar.fill",
                                         color: .purple
                                     )
                                 }
                                 .padding(.horizontal, 24)
+
+                                // ── Personal Bests per mode ───────────────────
+                                if selectedGame == "All" {
+                                    VStack(alignment: .leading, spacing: 12) {
+                                        Text("PERSONAL BESTS")
+                                            .font(.system(size: 12, weight: .bold))
+                                            .foregroundColor(.secondary)
+                                            .padding(.horizontal, 24)
+
+                                        VStack(spacing: 0) {
+                                            ForEach(Array(GameMode.allCases.enumerated()), id: \.element) { idx, mode in
+                                                HStack(spacing: 14) {
+                                                    Image(mode.imageName)
+                                                        .resizable()
+                                                        .aspectRatio(contentMode: .fill)
+                                                        .frame(width: 36, height: 36)
+                                                        .cornerRadius(8)
+                                                        .overlay(
+                                                            RoundedRectangle(cornerRadius: 8)
+                                                                .stroke(Color.white.opacity(0.12), lineWidth: 1)
+                                                        )
+
+                                                    Text(mode.rawValue)
+                                                        .font(.system(size: 15, weight: .bold, design: .rounded))
+                                                        .foregroundColor(.white)
+
+                                                    Spacer()
+
+                                                    HStack(alignment: .firstTextBaseline, spacing: 3) {
+                                                        Text("\(store.highScore(for: mode))")
+                                                            .font(.system(size: 16, weight: .black, design: .rounded))
+                                                            .foregroundColor(.white)
+                                                        Text("PTS")
+                                                            .font(.system(size: 9, weight: .heavy, design: .rounded))
+                                                            .foregroundColor(mode.accentColor)
+                                                    }
+                                                }
+                                                .padding(.vertical, 14)
+                                                .padding(.horizontal, 16)
+
+                                                if idx < GameMode.allCases.count - 1 {
+                                                    Divider()
+                                                        .background(Color.white.opacity(0.06))
+                                                        .padding(.leading, 66)
+                                                }
+                                            }
+                                        }
+                                        .background(
+                                            RoundedRectangle(cornerRadius: 18)
+                                                .fill(Color.white.opacity(0.025))
+                                                .overlay(
+                                                    RoundedRectangle(cornerRadius: 18)
+                                                        .stroke(Color.white.opacity(0.08), lineWidth: 1)
+                                                )
+                                        )
+                                        .padding(.horizontal, 24)
+                                    }
+                                }
                                 
                                 VStack(alignment: .leading, spacing: 16) {
                                     

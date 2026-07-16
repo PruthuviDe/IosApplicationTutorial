@@ -14,7 +14,7 @@ final class TapFrenzyViewModel: ObservableObject {
 
     private var lastTapTime    = Date()
     private var bonusBurstStart = 5
-    private let initialDuration: Int
+    let initialDuration: Int
 
     let timer = Timer.publish(every: 1.0, on: .main, in: .common).autoconnect()
 

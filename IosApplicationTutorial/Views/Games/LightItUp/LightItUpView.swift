@@ -32,13 +32,13 @@ struct LightItUpView: View {
     private var gameView: some View {
         ZStack {
             RadialGradient(
-                colors: [vm.difficulty.accentColor.opacity(0.20), Color.black],
+                colors: [vm.levelAccentColor.opacity(0.20), Color.black],
                 center: .center,
                 startRadius: 10,
                 endRadius: 360
             )
             .ignoresSafeArea()
-            .animation(.easeInOut(duration: 0.6), value: vm.score / 5)
+            .animation(.easeInOut(duration: 0.6), value: vm.levelNumber)
 
             LinearGradient(
                 colors: [Color(red: 0.07, green: 0.08, blue: 0.10), Color.black],
@@ -103,13 +103,13 @@ struct LightItUpView: View {
                 Text("LEVEL")
                     .font(.system(size: 11, weight: .bold))
                     .foregroundColor(.white.opacity(0.4))
-                Text("\(vm.score / 5 + 1)")
+                Text(vm.roundLength > 0 ? "L\(vm.levelNumber)" : "\(vm.levelNumber)")
                     .font(.system(size: 32, weight: .black, design: .rounded))
-                    .foregroundColor(vm.difficulty.accentColor)
+                    .foregroundColor(vm.levelAccentColor)
                     .lineLimit(1)
                     .minimumScaleFactor(0.8)
             }
-            .animation(.easeInOut(duration: 0.3), value: vm.score / 5)
+            .animation(.easeInOut(duration: 0.3), value: vm.levelNumber)
 
             Spacer()
 

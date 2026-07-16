@@ -102,7 +102,7 @@ struct TapFrenzyView: View {
                         .scaleEffect(vm.buttonPressed ? 0.88 : 1.0)
                         .animation(.spring(response: 0.2, dampingFraction: 0.5), value: vm.buttonPressed)
                         .offset(x: vm.buttonOffsetX, y: vm.buttonOffsetY)
-                        .scaleEffect(0.6 + (Double(vm.timeRemaining) / 10.0 * 0.4))
+                        .scaleEffect(0.6 + (Double(vm.timeRemaining) / Double(vm.initialDuration) * 0.4))
                         .animation(.spring(response: 0.35, dampingFraction: 0.5), value: vm.timeRemaining)
 
                         Spacer()
