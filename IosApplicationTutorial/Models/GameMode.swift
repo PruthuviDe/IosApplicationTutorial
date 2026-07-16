@@ -9,8 +9,8 @@ enum GameMode: String, Codable, CaseIterable {
     var icon: String {
         switch self {
         case .tapFrenzy: return "hand.tap.fill"
-        case .lightItUp: return "lightbulb.fill"
-        case .quizRush:  return "questionmark.circle.fill"
+        case .lightItUp: return "lightbulb.led.fill"
+        case .quizRush:  return "questionmark.bubble.fill"
         }
     }
 
@@ -43,6 +43,14 @@ enum GameMode: String, Codable, CaseIterable {
         case .tapFrenzy: return Color(red: 0.08, green: 0.02, blue: 0.02)
         case .lightItUp: return Color(red: 0.02, green: 0.07, blue: 0.08)
         case .quizRush:  return Color(red: 0.04, green: 0.02, blue: 0.08)
+        }
+    }
+
+    var category: String {
+        switch self {
+        case .tapFrenzy: return "Action"
+        case .lightItUp: return "Puzzle"
+        case .quizRush:  return "Quiz"
         }
     }
 }

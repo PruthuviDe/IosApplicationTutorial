@@ -3,7 +3,11 @@ import Combine
 
 struct TapFrenzyView: View {
 
-    @StateObject private var vm = TapFrenzyViewModel()
+    @StateObject private var vm: TapFrenzyViewModel
+
+    init(duration: Int = 10) {
+        _vm = StateObject(wrappedValue: TapFrenzyViewModel(duration: duration))
+    }
 
     var body: some View {
         Group {
@@ -55,29 +59,21 @@ struct TapFrenzyView: View {
                         .padding(.horizontal, 24)
                         .padding(.top, 16)
 
-                        VStack(spacing: 6) {
+                        VStack(spacing: 8) {
                             if vm.comboMultiplier > 1 {
-                                HStack(spacing: 4) {
-                                    Image(systemName: "bolt.fill")
-                                        .font(.system(size: 14))
-                                    Text("\(vm.comboMultiplier)x Combo Active")
-                                }
-                                .font(.system(size: 18, weight: .bold, design: .rounded))
-                                .foregroundColor(.yellow)
-                                .shadow(color: .yellow.opacity(0.3), radius: 8)
+                                Text("COMBO X\(vm.comboMultiplier)")
+                                    .font(.system(size: 13, weight: .black))
+                                    .foregroundColor(.yellow)
+                                    .tracking(2)
                             }
                             if vm.isBonusBurst {
-                                HStack(spacing: 4) {
-                                    Image(systemName: "sparkles")
-                                        .font(.system(size: 12))
-                                    Text("Double Points Active")
-                                }
-                                .font(.system(size: 13, weight: .bold, design: .rounded))
-                                .foregroundColor(Color(red: 0.20, green: 0.83, blue: 0.52))
-                                .shadow(color: Color(red: 0.20, green: 0.83, blue: 0.52).opacity(0.3), radius: 8)
+                                Text("DOUBLE POINTS")
+                                    .font(.system(size: 13, weight: .black))
+                                    .foregroundColor(Color(red: 0.20, green: 0.83, blue: 0.52))
+                                    .tracking(2)
                             }
                         }
-                        .frame(height: 55)
+                        .frame(height: 40)
 
                         Spacer()
 
@@ -125,6 +121,9 @@ struct TapFrenzyView: View {
             }
         }
         .toolbar(.hidden, for: .tabBar)
+        .onAppear {
+            SessionStore.shared.isTabBarHidden = true
+        }
     }
 }
 

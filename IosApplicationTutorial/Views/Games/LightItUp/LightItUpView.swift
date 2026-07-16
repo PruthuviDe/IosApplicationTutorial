@@ -24,6 +24,9 @@ struct LightItUpView: View {
             }
         }
         .toolbar(.hidden, for: .tabBar)
+        .onAppear {
+            SessionStore.shared.isTabBarHidden = true
+        }
     }
 
     private var gameView: some View {
@@ -64,10 +67,11 @@ struct LightItUpView: View {
         .overlay(
             Group {
                 if vm.showBanner {
-                    Text(vm.bannerMessage)
-                        .font(.system(size: 42, weight: .heavy, design: .rounded))
+                    Text(vm.bannerMessage.uppercased())
+                        .font(.system(size: 36, weight: .black))
                         .foregroundColor(vm.bannerColor)
-                        .shadow(color: vm.bannerColor.opacity(0.6), radius: 14)
+                        .tracking(3)
+                        .shadow(color: .black.opacity(0.85), radius: 4, x: 0, y: 2)
                         .transition(.scale.combined(with: .opacity))
                 }
             }
@@ -88,20 +92,24 @@ struct LightItUpView: View {
                 Text("\(vm.score)")
                     .font(.system(size: 32, weight: .black, design: .rounded))
                     .foregroundColor(.white)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
             }
-            .frame(width: 80, alignment: .leading)
+            .frame(width: 100, alignment: .leading)
 
             Spacer()
 
-            Text("Lv.\(vm.score / 5 + 1)")
-                .font(.system(size: 11, weight: .bold, design: .rounded))
-                .foregroundColor(vm.difficulty.accentColor)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 6)
-                .background(vm.difficulty.accentColor.opacity(0.12))
-                .cornerRadius(8)
-                .padding(.top, 4)
-                .animation(.easeInOut(duration: 0.3), value: vm.score / 5)
+            VStack(alignment: .center, spacing: 4) {
+                Text("LEVEL")
+                    .font(.system(size: 11, weight: .bold))
+                    .foregroundColor(.white.opacity(0.4))
+                Text("\(vm.score / 5 + 1)")
+                    .font(.system(size: 32, weight: .black, design: .rounded))
+                    .foregroundColor(vm.difficulty.accentColor)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
+            }
+            .animation(.easeInOut(duration: 0.3), value: vm.score / 5)
 
             Spacer()
 
@@ -116,20 +124,24 @@ struct LightItUpView: View {
                                          ? Color(red: 0.92, green: 0.26, blue: 0.35)
                                          : .white)
                         .scaleEffect(vm.timeRemaining <= 5 ? 1.2 : 1.0)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.8)
                         .animation(.spring(response: 0.3, dampingFraction: 0.5),
                                    value: vm.timeRemaining)
                 }
-                .frame(width: 80, alignment: .trailing)
+                .frame(width: 100, alignment: .trailing)
             } else {
                 VStack(alignment: .trailing, spacing: 4) {
                     Text("SPEED")
                         .font(.system(size: 11, weight: .bold))
                         .foregroundColor(.white.opacity(0.4))
                     Text("\(String(format: "%.1f", vm.difficulty.litWindow))s")
-                        .font(.system(size: 20, weight: .black, design: .rounded))
+                        .font(.system(size: 32, weight: .black, design: .rounded))
                         .foregroundColor(.white)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.8)
                 }
-                .frame(width: 80, alignment: .trailing)
+                .frame(width: 100, alignment: .trailing)
             }
         }
         .padding(.horizontal, 24)
@@ -155,65 +167,48 @@ struct LightItUpView: View {
         let diff = vm.difficulty
 
         if diff.sequenceLength > 0 && !vm.sequenceTarget.isEmpty {
-            HStack(spacing: 6) {
-                Text("Tap in order:")
-                    .font(.system(size: 12, weight: .semibold, design: .rounded))
+            HStack(spacing: 8) {
+                Text("TAP IN ORDER:")
+                    .font(.system(size: 12, weight: .black))
                     .foregroundColor(.white.opacity(0.5))
+                    .tracking(1.5)
 
-                ForEach(Array(vm.sequenceTarget.enumerated()), id: \.offset) { idx, color in
-                    let isCurrent = idx == vm.sequenceStep
-                    let isDone    = idx < vm.sequenceStep
-                    let dotSize: CGFloat = isCurrent ? 26 : 20
+                HStack(spacing: 8) {
+                    ForEach(Array(vm.sequenceTarget.enumerated()), id: \.offset) { idx, color in
+                        let isCurrent = idx == vm.sequenceStep
+                        let isDone    = idx < vm.sequenceStep
+                        let dotSize: CGFloat = isCurrent ? 20 : 14
 
-                    Circle()
-                        .fill(isDone ? Color.white.opacity(0.15) : color.uiColor)
-                        .frame(width: dotSize, height: dotSize)
-                        .shadow(color: isCurrent ? color.uiColor.opacity(0.7) : .clear, radius: 6)
-                        .overlay(
-                            Circle()
-                                .stroke(isCurrent ? color.uiColor : Color.clear, lineWidth: 2)
-                                .scaleEffect(1.4)
-                                .opacity(isCurrent ? 0.45 : 0)
-                        )
-                        .animation(.spring(response: 0.3, dampingFraction: 0.6),
-                                   value: vm.sequenceStep)
-
-                    if idx < vm.sequenceTarget.count - 1 {
-                        Image(systemName: "arrow.right")
-                            .font(.system(size: 9, weight: .bold))
-                            .foregroundColor(.white.opacity(0.3))
+                        Circle()
+                            .fill(isDone ? Color.white.opacity(0.15) : color.uiColor)
+                            .frame(width: dotSize, height: dotSize)
+                            .overlay(
+                                Circle()
+                                    .stroke(isCurrent ? color.uiColor : Color.clear, lineWidth: 2)
+                                    .scaleEffect(1.3)
+                                    .opacity(isCurrent ? 0.5 : 0)
+                            )
                     }
                 }
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 10)
-            .background(Color.white.opacity(0.06))
-            .cornerRadius(12)
-            .padding(.horizontal, 24)
-            .padding(.bottom, 4)
+            .padding(.bottom, 8)
 
         } else if diff.colorCount > 1 {
-            HStack(spacing: 8) {
-                Text("Tap the")
-                    .font(.system(size: 12, weight: .semibold, design: .rounded))
+            HStack(spacing: 4) {
+                Text("TAP THE")
+                    .font(.system(size: 13, weight: .black))
                     .foregroundColor(.white.opacity(0.5))
-                Circle()
-                    .fill(vm.targetColor.uiColor)
-                    .frame(width: 18, height: 18)
-                    .shadow(color: vm.targetColor.uiColor.opacity(0.7), radius: 5)
-                Text(vm.targetColor.displayName)
-                    .font(.system(size: 13, weight: .bold, design: .rounded))
+                    .tracking(1.5)
+                Text(vm.targetColor.displayName.uppercased())
+                    .font(.system(size: 13, weight: .black))
                     .foregroundColor(vm.targetColor.uiColor)
-                Text("card")
-                    .font(.system(size: 12, weight: .semibold, design: .rounded))
+                    .tracking(1.5)
+                Text("CARD")
+                    .font(.system(size: 13, weight: .black))
                     .foregroundColor(.white.opacity(0.5))
+                    .tracking(1.5)
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 10)
-            .background(vm.targetColor.uiColor.opacity(0.10))
-            .cornerRadius(12)
-            .padding(.horizontal, 24)
-            .padding(.bottom, 4)
+            .padding(.bottom, 8)
             .animation(.easeInOut(duration: 0.2), value: vm.targetColor)
         }
     }

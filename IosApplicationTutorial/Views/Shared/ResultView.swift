@@ -17,39 +17,30 @@ struct ResultView: View {
             Spacer()
 
             Text("GAME OVER")
-                .font(.system(size: 28, weight: .bold, design: .rounded))
-                .foregroundColor(.white.opacity(0.6))
+                .font(.system(size: 14, weight: .black))
+                .foregroundColor(.white.opacity(0.4))
                 .tracking(2)
 
-            VStack(spacing: 4) {
-                Text("\(score)")
-                    .font(.system(size: 80, weight: .black, design: .rounded))
-                    .foregroundColor(.white)
-                Text("POINTS")
-                    .font(.system(size: 12, weight: .bold))
-                    .foregroundColor(.white.opacity(0.4))
-                    .tracking(1)
-            }
-
-            if isNewBest {
-                HStack(spacing: 6) {
-                    Image(systemName: "crown.fill")
-                        .foregroundColor(.yellow)
-                    Text("NEW HIGH SCORE!")
-                        .font(.system(size: 14, weight: .bold, design: .rounded))
-                        .foregroundColor(.yellow)
+            VStack(spacing: 12) {
+                HStack(alignment: .firstTextBaseline, spacing: 6) {
+                    Text("\(score)")
+                        .font(.system(size: 80, weight: .black, design: .rounded))
+                        .foregroundColor(.white)
+                    Text("PTS")
+                        .font(.system(size: 24, weight: .heavy, design: .rounded))
+                        .foregroundColor(mode.accentColor)
                 }
-                .padding(.horizontal, 14)
-                .padding(.vertical, 6)
-                .background(Color.yellow.opacity(0.10))
-                .cornerRadius(12)
-            } else {
-                HStack(spacing: 4) {
-                    Image(systemName: "trophy.fill")
+
+                if isNewBest {
+                    Text("NEW PERSONAL BEST")
+                        .font(.system(size: 13, weight: .black))
+                        .foregroundColor(.yellow)
+                        .tracking(2)
+                } else {
+                    Text("BEST: \(currentBest) PTS")
+                        .font(.system(size: 13, weight: .black))
                         .foregroundColor(.white.opacity(0.4))
-                    Text("Best: \(currentBest)")
-                        .font(.system(size: 16, weight: .semibold, design: .rounded))
-                        .foregroundColor(.white.opacity(0.6))
+                        .tracking(2)
                 }
             }
 
@@ -80,11 +71,19 @@ struct ResultView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(
-            LinearGradient(
-                colors: [mode.backgroundTopColor, Color.black],
-                startPoint: .top,
-                endPoint: .bottom
-            )
+            ZStack {
+                GeometryReader { geo in
+                    Image(mode.imageName + "_bg")
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                        .frame(width: geo.size.width, height: geo.size.height)
+                        .clipped()
+                }
+                .ignoresSafeArea()
+
+                Color.black.opacity(0.85)
+                    .ignoresSafeArea()
+            }
         )
         .ignoresSafeArea(.all)
         .toolbar(.hidden, for: .tabBar)

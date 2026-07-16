@@ -2,280 +2,305 @@ import SwiftUI
 import Charts
 
 struct StatsTab: View {
-
+    
     @StateObject private var vm    = StatsViewModel()
     @ObservedObject private var store = SessionStore.shared
-
-
+    
+    @State private var selectedGame: String = "All"
+    
+    var gamesList: [String] {
+        var list = ["All"]
+        list.append(contentsOf: GameMode.allCases.map { $0.rawValue })
+        return list
+    }
+    
     var body: some View {
         NavigationStack {
             ZStack {
-                RadialGradient(
-                    colors: [Color(red: 0.15, green: 0.75, blue: 0.60).opacity(0.35), Color(red: 0.08, green: 0.09, blue: 0.14)],
-                    center: .top,
-                    startRadius: 10,
-                    endRadius: 400
-                )
-                .ignoresSafeArea()
-
-                VStack(spacing: 0) {
-
-                    HStack {
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text("Your Performance")
-                                .font(.system(size: 14, weight: .medium, design: .rounded))
-                                .foregroundColor(.white.opacity(0.4))
-                            
-                            Text("Stats & History")
-                                .font(.system(size: 28, weight: .black, design: .rounded))
-                                .foregroundColor(.white)
-                        }
+                Color(red: 0.05, green: 0.06, blue: 0.08).ignoresSafeArea()
+                
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: 0) {
                         Spacer()
-                    }
-                    .padding(.horizontal, 24)
-                    .padding(.top, 24)
-                    .padding(.bottom, 20)
-
-                    if store.sessions.isEmpty {
-                        Spacer()
-                        VStack(spacing: 20) {
-                            ZStack {
-                                Circle()
-                                    .fill(Color.white.opacity(0.03))
-                                    .frame(width: 100, height: 100)
-                                    .overlay(
-                                        Circle()
-                                            .stroke(Color.white.opacity(0.06), lineWidth: 1.5)
-                                    )
-
-                                Image(systemName: "chart.bar.xaxis")
-                                    .font(.system(size: 40))
-                                    .foregroundColor(.white.opacity(0.3))
-                            }
-
-                            VStack(spacing: 6) {
-                                Text("No games yet")
-                                    .font(.system(size: 18, weight: .bold, design: .rounded))
-                                    .foregroundColor(.white)
+                            .frame(height: 24)
+                        
+                        if store.sessions.isEmpty {
+                            VStack(spacing: 20) {
+                                ZStack {
+                                    Circle()
+                                        .fill(Color.white.opacity(0.05))
+                                        .frame(width: 100, height: 100)
+                                        .overlay(Circle().stroke(Color.white.opacity(0.1), lineWidth: 1))
+                                    
+                                    Image(systemName: "chart.xyaxis.line")
+                                        .font(.system(size: 40))
+                                        .foregroundColor(.secondary)
+                                }
                                 
-                                Text("Play a game from the home tab to start recording stats.")
-                                    .font(.system(size: 13, weight: .medium, design: .rounded))
-                                    .foregroundColor(.white.opacity(0.40))
-                                    .multilineTextAlignment(.center)
-                                    .padding(.horizontal, 48)
+                                VStack(spacing: 6) {
+                                    Text("No games yet")
+                                        .font(.system(size: 18, weight: .bold, design: .rounded))
+                                        .foregroundColor(.primary)
+                                    
+                                    Text("Play a game to start tracking your performance.")
+                                        .font(.system(size: 13, weight: .medium, design: .rounded))
+                                        .foregroundColor(.secondary)
+                                        .multilineTextAlignment(.center)
+                                        .padding(.horizontal, 48)
+                                }
                             }
-                        }
-                        Spacer()
-                    } else {
-                        ScrollView(showsIndicators: false) {
-                            VStack(spacing: 24) {
-
-                                HStack(spacing: 12) {
-                                    ScoreBadge(
-                                        label: "Games Played",
-                                        value: "\(store.totalGamesPlayed)",
+                            .padding(.top, 60)
+                        } else {
+                            VStack(spacing: 32) {
+                                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 16) {
+                                    StatWidget(
+                                        title: "Games Played",
+                                        value: "\(selectedGame == "All" ? store.totalGamesPlayed : store.sessions.filter { $0.mode.rawValue == selectedGame }.count)",
                                         icon: "gamecontroller.fill",
-                                        color: Color(red: 0.65, green: 0.35, blue: 0.95)
+                                        color: .cyan
                                     )
-                                    ScoreBadge(
-                                        label: "Total Score",
-                                        value: "\(store.totalScore)",
-                                        icon: "star.fill",
-                                        color: .yellow
+                                    StatWidget(
+                                        title: "High Score",
+                                        value: selectedGame == "All" ? "\(store.totalScore)" : "\(store.highScore(for: GameMode.allCases.first(where: { $0.rawValue == selectedGame }) ?? .tapFrenzy))",
+                                        icon: "trophy.fill",
+                                        color: .purple
                                     )
                                 }
-
-                                VStack(alignment: .leading, spacing: 12) {
-                                    Text("PERSONAL BESTS")
-                                        .font(.system(size: 11, weight: .bold))
-                                        .foregroundColor(.white.opacity(0.4))
-                                        .tracking(1.5)
-
-                                    VStack(spacing: 10) {
-                                        ForEach(GameMode.allCases, id: \.self) { mode in
-                                            HStack(spacing: 14) {
-                                                 Image(mode.imageName)
-                                                     .resizable()
-                                                     .aspectRatio(contentMode: .fill)
-                                                     .frame(width: 38, height: 38)
-                                                     .cornerRadius(10)
-                                                     .overlay(
-                                                         RoundedRectangle(cornerRadius: 10)
-                                                             .stroke(mode.accentColor.opacity(0.20), lineWidth: 1)
-                                                     )
-
-                                                Text(mode.rawValue)
-                                                    .font(.system(size: 15, weight: .semibold, design: .rounded))
-                                                    .foregroundColor(.white)
-
-                                                Spacer()
-
-                                                HStack(alignment: .firstTextBaseline, spacing: 2) {
-                                                    Text("\(store.highScore(for: mode))")
-                                                        .font(.system(size: 18, weight: .black, design: .rounded))
-                                                        .foregroundColor(mode.accentColor)
-                                                    Text("pts")
-                                                        .font(.system(size: 10, weight: .semibold))
-                                                        .foregroundColor(.white.opacity(0.3))
+                                .padding(.horizontal, 24)
+                                
+                                VStack(alignment: .leading, spacing: 16) {
+                                    
+                                    HStack {
+                                        Text("SCORE HISTORY")
+                                            .font(.system(size: 12, weight: .bold))
+                                            .foregroundColor(.secondary)
+                                        Spacer()
+                                    }
+                                    .padding(.horizontal, 24)
+                                    
+                                    ScrollView(.horizontal, showsIndicators: false) {
+                                        HStack(spacing: 12) {
+                                            ForEach(gamesList, id: \.self) { game in
+                                                Button(action: { selectedGame = game }) {
+                                                    Text(game)
+                                                        .font(.system(size: 14, weight: .semibold, design: .rounded))
+                                                        .foregroundColor(selectedGame == game ? .black : .white.opacity(0.8))
+                                                        .padding(.horizontal, 20)
+                                                        .padding(.vertical, 8)
+                                                        .background(
+                                                            Capsule()
+                                                                .fill(selectedGame == game ? Color.white : Color(red: 0.15, green: 0.15, blue: 0.16))
+                                                        )
+                                                        .overlay(
+                                                            Capsule().stroke(Color.white.opacity(selectedGame == game ? 0 : 0.1), lineWidth: 1)
+                                                        )
                                                 }
                                             }
-                                            .padding(.horizontal, 14)
-                                            .padding(.vertical, 12)
-                                            .background(
-                                                LinearGradient(
-                                                    colors: [Color.white.opacity(0.06), Color.white.opacity(0.02)],
-                                                    startPoint: .topLeading,
-                                                    endPoint: .bottomTrailing
-                                                )
-                                            )
-                                            .cornerRadius(14)
-                                            .overlay(
-                                                RoundedRectangle(cornerRadius: 14)
-                                                    .stroke(Color.white.opacity(0.10), lineWidth: 1)
-                                            )
                                         }
+                                        .padding(.horizontal, 24)
                                     }
-                                }
-
-                                VStack(alignment: .leading, spacing: 12) {
-                                    Text("SCORE HISTORY")
-                                        .font(.system(size: 11, weight: .bold))
-                                        .foregroundColor(.white.opacity(0.4))
-                                        .tracking(1.5)
-
+                                    
                                     let chartData = store.sessions
+                                        .filter { selectedGame == "All" || $0.mode.rawValue == selectedGame }
                                         .sorted { $0.timestamp < $1.timestamp }
                                         .enumerated()
                                         .map { (index: $0.offset, session: $0.element) }
-
-                                    if chartData.isEmpty {
-                                        Text("No data yet")
-                                            .font(.system(size: 13, weight: .medium, design: .rounded))
-                                            .foregroundColor(.white.opacity(0.3))
-                                            .frame(maxWidth: .infinity, minHeight: 140, alignment: .center)
-                                    } else {
-                                        Chart {
-                                            ForEach(chartData, id: \.index) { item in
-                                                BarMark(
-                                                    x: .value("Game", item.index + 1),
-                                                    y: .value("Score", item.session.score)
-                                                )
-                                                .foregroundStyle(item.session.mode.accentColor)
-                                                .cornerRadius(4)
-                                                .annotation(position: .top) {
-                                                    if chartData.count <= 10 {
-                                                        Text("\(item.session.score)")
-                                                            .font(.system(size: 8, weight: .bold))
-                                                            .foregroundColor(.white.opacity(0.5))
-                                                    }
+                                    
+                                    let chartColor = selectedGame == "All" ? Color.cyan : (GameMode.allCases.first(where: { $0.rawValue == selectedGame })?.accentColor ?? .cyan)
+                                    
+                                    VStack {
+                                        if chartData.isEmpty {
+                                            Text("No data for \(selectedGame)")
+                                                .font(.system(size: 14, weight: .medium, design: .rounded))
+                                                .foregroundColor(.secondary)
+                                                .frame(height: 200)
+                                        } else {
+                                            Chart {
+                                                ForEach(chartData, id: \.index) { item in
+                                                    LineMark(
+                                                        x: .value("Game", item.index + 1),
+                                                        y: .value("Score", item.session.score)
+                                                    )
+                                                    .interpolationMethod(.catmullRom)
+                                                    .foregroundStyle(chartColor)
+                                                    .lineStyle(StrokeStyle(lineWidth: 3))
+                                                    
+                                                    AreaMark(
+                                                        x: .value("Game", item.index + 1),
+                                                        y: .value("Score", item.session.score)
+                                                    )
+                                                    .interpolationMethod(.catmullRom)
+                                                    .foregroundStyle(
+                                                        LinearGradient(
+                                                            colors: [chartColor.opacity(0.4), chartColor.opacity(0.0)],
+                                                            startPoint: .top,
+                                                            endPoint: .bottom
+                                                        )
+                                                    )
+                                                }
+                                            }
+                                            .frame(height: 200)
+                                            .chartXAxis {
+                                                AxisMarks(values: .automatic) { _ in
+                                                    AxisValueLabel()
+                                                        .foregroundStyle(Color.secondary.opacity(0.5))
+                                                        .font(.system(size: 9, weight: .bold))
+                                                }
+                                            }
+                                            .chartYAxis {
+                                                AxisMarks(position: .leading) { value in
+                                                    AxisGridLine()
+                                                        .foregroundStyle(Color.white.opacity(0.05))
+                                                    AxisValueLabel()
+                                                        .foregroundStyle(Color.secondary.opacity(0.5))
+                                                        .font(.system(size: 10, weight: .bold))
                                                 }
                                             }
                                         }
-                                        .frame(height: 160)
-                                        .chartXAxis {
-                                            AxisMarks(values: .automatic) { _ in
-                                                AxisValueLabel()
-                                                    .foregroundStyle(Color.white.opacity(0.25))
-                                                    .font(.system(size: 9, weight: .medium))
-                                            }
-                                        }
-                                        .chartYAxis {
-                                            AxisMarks(position: .leading) { value in
-                                                AxisGridLine()
-                                                    .foregroundStyle(Color.white.opacity(0.06))
-                                                AxisValueLabel()
-                                                    .foregroundStyle(Color.white.opacity(0.35))
-                                                    .font(.system(size: 10, weight: .medium))
-                                            }
-                                        }
-                                        .padding(14)
-                                        .background(Color.white.opacity(0.03))
-                                        .cornerRadius(14)
-                                        .overlay(
-                                            RoundedRectangle(cornerRadius: 14)
-                                                .stroke(Color.white.opacity(0.06), lineWidth: 1)
-                                        )
                                     }
-
-                                    HStack(spacing: 16) {
-                                        ForEach(GameMode.allCases, id: \.self) { mode in
-                                            HStack(spacing: 6) {
-                                                RoundedRectangle(cornerRadius: 3)
-                                                    .fill(mode.accentColor)
-                                                    .frame(width: 12, height: 12)
-                                                Text(mode.rawValue)
-                                                    .font(.system(size: 11, weight: .medium, design: .rounded))
-                                                    .foregroundColor(.white.opacity(0.45))
-                                            }
-                                        }
-                                    }
+                                    .padding(20)
+                                    .background(
+                                        RoundedRectangle(cornerRadius: 24)
+                                            .fill(Color.white.opacity(0.03))
+                                            .overlay(RoundedRectangle(cornerRadius: 24).stroke(Color.white.opacity(0.05), lineWidth: 1))
+                                    )
+                                    .padding(.horizontal, 24)
                                 }
-
+                                
                                 VStack(alignment: .leading, spacing: 12) {
                                     Text("RECENT GAMES")
-                                        .font(.system(size: 11, weight: .bold))
-                                        .foregroundColor(.white.opacity(0.4))
-                                        .tracking(1.5)
-
-                                    VStack(spacing: 10) {
-                                        ForEach(store.recentSessions) { session in
-                                            HStack(spacing: 14) {
-                                                 Image(session.mode.imageName)
-                                                     .resizable()
-                                                     .aspectRatio(contentMode: .fill)
-                                                     .frame(width: 38, height: 38)
-                                                     .cornerRadius(10)
-
-                                                VStack(alignment: .leading, spacing: 3) {
-                                                    Text(session.mode.rawValue)
-                                                        .font(.system(size: 14, weight: .semibold, design: .rounded))
-                                                        .foregroundColor(.white)
-                                                    Text(session.timestamp, style: .relative)
-                                                        .font(.system(size: 11, weight: .medium, design: .rounded))
-                                                        .foregroundColor(.white.opacity(0.35))
+                                        .font(.system(size: 12, weight: .bold))
+                                        .foregroundColor(.secondary)
+                                        .padding(.horizontal, 24)
+                                    
+                                    VStack(spacing: 0) {
+                                        let filteredSessions = store.recentSessions.filter { selectedGame == "All" || $0.mode.rawValue == selectedGame }
+                                        
+                                        if filteredSessions.isEmpty {
+                                            Text("No recent games")
+                                                .font(.system(size: 14, weight: .medium, design: .rounded))
+                                                .foregroundColor(.secondary)
+                                                .padding(.vertical, 24)
+                                                .frame(maxWidth: .infinity, alignment: .center)
+                                        } else {
+                                            let sessionsArray = Array(filteredSessions.enumerated())
+                                            ForEach(sessionsArray, id: \.element.id) { index, session in
+                                                HStack(spacing: 14) {
+                                                    Image(session.mode.imageName)
+                                                        .resizable()
+                                                        .aspectRatio(contentMode: .fill)
+                                                        .frame(width: 40, height: 40)
+                                                        .cornerRadius(8)
+                                                        .overlay(
+                                                            RoundedRectangle(cornerRadius: 8)
+                                                                .stroke(Color.white.opacity(0.12), lineWidth: 1)
+                                                        )
+                                                    
+                                                    VStack(alignment: .leading, spacing: 3) {
+                                                        Text(session.mode.rawValue)
+                                                            .font(.system(size: 15, weight: .bold, design: .rounded))
+                                                            .foregroundColor(.white)
+                                                        
+                                                        HStack(spacing: 4) {
+                                                            Image(systemName: "clock")
+                                                                .font(.system(size: 10))
+                                                                .foregroundColor(.secondary)
+                                                            Text(session.timestamp, style: .relative)
+                                                                .font(.system(size: 11, weight: .medium, design: .rounded))
+                                                                .foregroundColor(.secondary)
+                                                        }
+                                                    }
+                                                    
+                                                    Spacer()
+                                                    
+                                                    HStack(alignment: .firstTextBaseline, spacing: 3) {
+                                                        Text("\(session.score)")
+                                                            .font(.system(size: 16, weight: .black, design: .rounded))
+                                                            .foregroundColor(.white)
+                                                        Text("PTS")
+                                                            .font(.system(size: 9, weight: .heavy, design: .rounded))
+                                                            .foregroundColor(session.mode.accentColor)
+                                                    }
                                                 }
-
-                                                Spacer()
-
-                                                Text("+\(session.score)")
-                                                    .font(.system(size: 16, weight: .bold, design: .rounded))
-                                                    .foregroundColor(.white)
+                                                .padding(.vertical, 14)
+                                                .padding(.horizontal, 16)
+                                                
+                                                if index < sessionsArray.count - 1 {
+                                                    Divider()
+                                                        .background(Color.white.opacity(0.06))
+                                                        .padding(.leading, 70)
+                                                }
                                             }
-                                            .padding(.horizontal, 14)
-                                            .padding(.vertical, 12)
-                                            .background(
-                                                LinearGradient(
-                                                    colors: [Color.white.opacity(0.05), Color.white.opacity(0.01)],
-                                                    startPoint: .topLeading,
-                                                    endPoint: .bottomTrailing
-                                                )
-                                            )
-                                            .cornerRadius(14)
-                                            .overlay(
-                                                RoundedRectangle(cornerRadius: 14)
-                                                    .stroke(Color.white.opacity(0.08), lineWidth: 1)
-                                            )
                                         }
                                     }
+                                    .background(
+                                        RoundedRectangle(cornerRadius: 18)
+                                            .fill(Color.white.opacity(0.025))
+                                            .overlay(
+                                                RoundedRectangle(cornerRadius: 18)
+                                                    .stroke(Color.white.opacity(0.08), lineWidth: 1)
+                                            )
+                                    )
+                                    .padding(.horizontal, 24)
                                 }
+                                
                             }
-                            .padding(.horizontal, 24)
-                            .padding(.bottom, 24)
+                            .padding(.bottom, 120)
                         }
                     }
                 }
             }
-            .background(
-                LinearGradient(
-                    colors: [Color(red: 0.08, green: 0.09, blue: 0.14), Color(red: 0.12, green: 0.14, blue: 0.20)],
-                    startPoint: .top,
-                    endPoint: .bottom
-                )
-            )
+            .onAppear {
+                SessionStore.shared.isTabBarHidden = false
+            }
         }
     }
 }
 
-#Preview {
-    StatsTab()
+struct StatWidget: View {
+    let title: String
+    let value: String
+    let icon: String
+    let color: Color
+    
+    var body: some View {
+        ZStack(alignment: .bottomTrailing) {
+            Image(systemName: icon)
+                .font(.system(size: 60))
+                .foregroundColor(color.opacity(0.08))
+                .offset(x: 10, y: 10)
+                .rotationEffect(.degrees(-15))
+            
+            VStack(alignment: .leading, spacing: 12) {
+                HStack {
+                    ZStack {
+                        Circle()
+                            .fill(color.opacity(0.15))
+                            .frame(width: 36, height: 36)
+                        Image(systemName: icon)
+                            .font(.system(size: 16, weight: .bold))
+                            .foregroundColor(color)
+                    }
+                    Spacer()
+                }
+                
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(value)
+                        .font(.system(size: 28, weight: .black, design: .rounded))
+                        .foregroundColor(.primary)
+                    Text(title)
+                        .font(.system(size: 12, weight: .semibold, design: .rounded))
+                        .foregroundColor(.secondary)
+                }
+            }
+            .padding(16)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            RoundedRectangle(cornerRadius: 20)
+                .fill(Color.white.opacity(0.03))
+                .overlay(RoundedRectangle(cornerRadius: 20).stroke(color.opacity(0.3), lineWidth: 1))
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 20))
+    }
 }

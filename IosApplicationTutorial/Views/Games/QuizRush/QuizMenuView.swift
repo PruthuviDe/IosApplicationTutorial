@@ -6,6 +6,7 @@ struct QuizMenuView: View {
     @AppStorage("quizDifficulty") private var difficulty = "any"
     @AppStorage("quizAmount") private var amount = 10
     @AppStorage("quizTimerSeconds") private var timerSeconds = 0
+    @State private var isCategoryExpanded = false
 
     let categories: [(id: Int, name: String)] = [
         (0,  "Any Category"),
@@ -36,146 +37,205 @@ struct QuizMenuView: View {
     var body: some View {
 
         ZStack {
-            RadialGradient(
-                colors: [Color(red: 0.65, green: 0.35, blue: 0.95).opacity(0.18), Color.black],
-                center: .top,
-                startRadius: 10,
-                endRadius: 400
-            )
+            GeometryReader { geo in
+                Image("quiz_rush_bg")
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+                    .frame(width: geo.size.width, height: geo.size.height)
+                    .clipped()
+            }
             .ignoresSafeArea()
 
+            Color.black.opacity(0.85)
+                .ignoresSafeArea()
+
             VStack(spacing: 0) {
+                Spacer()
+                    .frame(height: 50)
+
+                VStack(spacing: 12) {
+                    Image("quiz_rush")
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                        .frame(width: 80, height: 80)
+                        .cornerRadius(18)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 18)
+                                .stroke(Color.white.opacity(0.12), lineWidth: 1)
+                        )
+
+                    VStack(spacing: 4) {
+                        Text("Quiz Rush")
+                            .font(.system(size: 30, weight: .black, design: .rounded))
+                            .foregroundColor(.white)
+                        
+                        Text("QUIZ")
+                            .font(.system(size: 11, weight: .bold))
+                            .foregroundColor(.secondary)
+                            .tracking(1.5)
+                    }
+                }
+                
+                Spacer()
+                    .frame(height: 30)
 
                 ScrollView(showsIndicators: false) {
-                    VStack(spacing: 24) {
+                    VStack(spacing: 20) {
+                        Divider()
+                            .background(Color.white.opacity(0.08))
 
-                        VStack(spacing: 8) {
-                            Image("quiz_rush")
-                                .resizable()
-                                .aspectRatio(contentMode: .fill)
-                                .frame(width: 80, height: 80)
-                                .cornerRadius(18)
-                                .shadow(color: Color(red: 0.65, green: 0.35, blue: 0.95).opacity(0.35), radius: 12)
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("CATEGORY")
+                                .font(.system(size: 11, weight: .bold))
+                                .foregroundColor(.secondary)
+                                .tracking(1)
 
-                            Text("Quiz Rush")
-                                .font(.system(size: 32, weight: .black, design: .rounded))
-                                .foregroundColor(.white)
-                                .tracking(0.5)
+                            Button(action: {
+                                withAnimation(.easeInOut(duration: 0.2)) {
+                                    isCategoryExpanded.toggle()
+                                }
+                            }) {
+                                HStack {
+                                    Text(selectedCategoryName)
+                                        .font(.system(size: 15, weight: .semibold, design: .rounded))
+                                        .foregroundColor(.white)
+                                    Spacer()
+                                    Image(systemName: isCategoryExpanded ? "chevron.up" : "chevron.down")
+                                        .font(.system(size: 12))
+                                        .foregroundColor(.secondary)
+                                }
+                                .padding(.horizontal, 14)
+                                .padding(.vertical, 12)
+                                .background(Color(red: 0.12, green: 0.12, blue: 0.14))
+                                .cornerRadius(10)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 10)
+                                        .stroke(Color.white.opacity(0.06), lineWidth: 1)
+                                )
+                            }
+                            .buttonStyle(PlainButtonStyle())
 
-                            Text("\(amount) questions · tap fast · build your streak")
-                                .font(.system(size: 13, weight: .medium, design: .rounded))
-                                .foregroundColor(.white.opacity(0.5))
-                        }
-                        .padding(.top, 24)
-
-                        VStack(spacing: 16) {
-
-                            VStack(alignment: .leading, spacing: 10) {
-                                Text("CATEGORY")
-                                    .font(.system(size: 11, weight: .bold))
-                                    .foregroundColor(Color(red: 0.65, green: 0.35, blue: 0.95))
-                                    .tracking(1)
-
-                                Menu {
-                                    ForEach(categories, id: \.id) { category in
-                                        Button(category.name) {
-                                            categoryId = category.id
+                            if isCategoryExpanded {
+                                VStack(alignment: .leading, spacing: 0) {
+                                    ScrollView(showsIndicators: true) {
+                                        VStack(alignment: .leading, spacing: 0) {
+                                            ForEach(categories, id: \.id) { category in
+                                                Button(action: {
+                                                    categoryId = category.id
+                                                    withAnimation(.easeInOut(duration: 0.15)) {
+                                                        isCategoryExpanded = false
+                                                    }
+                                                }) {
+                                                    Text(category.name)
+                                                        .font(.system(size: 14, weight: .medium, design: .rounded))
+                                                        .foregroundColor(categoryId == category.id ? .white : .white.opacity(0.6))
+                                                        .frame(maxWidth: .infinity, alignment: .leading)
+                                                        .padding(.horizontal, 16)
+                                                        .padding(.vertical, 12)
+                                                        .background(categoryId == category.id ? Color.white.opacity(0.08) : Color.clear)
+                                                }
+                                                .buttonStyle(PlainButtonStyle())
+                                                
+                                                if category.id != categories.last?.id {
+                                                    Divider()
+                                                        .background(Color.white.opacity(0.06))
+                                                        .padding(.horizontal, 16)
+                                                }
+                                            }
                                         }
                                     }
-                                } label: {
-                                    HStack {
-                                        Text(selectedCategoryName)
-                                            .font(.system(size: 15, weight: .semibold, design: .rounded))
-                                            .foregroundColor(.white)
-                                        Spacer()
-                                        Image(systemName: "chevron.up.chevron.down")
-                                            .font(.system(size: 12))
-                                            .foregroundColor(Color(red: 0.65, green: 0.35, blue: 0.95))
-                                    }
-                                    .padding(.horizontal, 14)
-                                    .padding(.vertical, 12)
-                                    .background(Color.white.opacity(0.04))
-                                    .cornerRadius(10)
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 10)
-                                            .stroke(Color.white.opacity(0.06), lineWidth: 1)
-                                    )
+                                    .frame(height: 200)
                                 }
+                                .background(Color(red: 0.12, green: 0.12, blue: 0.14))
+                                .cornerRadius(10)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 10)
+                                        .stroke(Color.white.opacity(0.06), lineWidth: 1)
+                                )
+                                .transition(.move(edge: .top).combined(with: .opacity))
                             }
-                            .padding(16)
-                            .background(Color.white.opacity(0.03))
-                            .cornerRadius(16)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 16)
-                                    .stroke(Color.white.opacity(0.06), lineWidth: 1)
-                            )
-
-                            VStack(alignment: .leading, spacing: 10) {
-                                Text("DIFFICULTY")
-                                    .font(.system(size: 11, weight: .bold))
-                                    .foregroundColor(Color(red: 0.65, green: 0.35, blue: 0.95))
-                                    .tracking(1)
-
-                                Picker("Difficulty", selection: $difficulty) {
-                                    ForEach(difficulties, id: \.self) { level in
-                                        Text(level.capitalized).tag(level)
-                                    }
-                                }
-                                .pickerStyle(.segmented)
-                            }
-                            .padding(16)
-                            .background(Color.white.opacity(0.03))
-                            .cornerRadius(16)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 16)
-                                    .stroke(Color.white.opacity(0.06), lineWidth: 1)
-                            )
-
-                            VStack(alignment: .leading, spacing: 10) {
-                                Text("QUESTIONS")
-                                    .font(.system(size: 11, weight: .bold))
-                                    .foregroundColor(Color(red: 0.65, green: 0.35, blue: 0.95))
-                                    .tracking(1)
-
-                                Picker("Amount", selection: $amount) {
-                                    ForEach(amounts, id: \.self) { n in
-                                        Text("\(n)").tag(n)
-                                    }
-                                }
-                                .pickerStyle(.segmented)
-                            }
-                            .padding(16)
-                            .background(Color.white.opacity(0.03))
-                            .cornerRadius(16)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 16)
-                                    .stroke(Color.white.opacity(0.06), lineWidth: 1)
-                            )
-
-                            VStack(alignment: .leading, spacing: 10) {
-                                Text("TIMER PER QUESTION")
-                                    .font(.system(size: 11, weight: .bold))
-                                    .foregroundColor(Color(red: 0.65, green: 0.35, blue: 0.95))
-                                    .tracking(1)
-
-                                Picker("Timer", selection: $timerSeconds) {
-                                    ForEach(timerOptions, id: \.self) { seconds in
-                                        Text(timerLabel(seconds)).tag(seconds)
-                                    }
-                                }
-                                .pickerStyle(.segmented)
-                            }
-                            .padding(16)
-                            .background(Color.white.opacity(0.03))
-                            .cornerRadius(16)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 16)
-                                    .stroke(Color.white.opacity(0.06), lineWidth: 1)
-                            )
                         }
-                        .padding(.horizontal, 24)
-                        .padding(.bottom, 24)
+
+                        Divider()
+                            .background(Color.white.opacity(0.08))
+
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("DIFFICULTY")
+                                .font(.system(size: 11, weight: .bold))
+                                .foregroundColor(.secondary)
+                                .tracking(1)
+
+                            HStack(spacing: 6) {
+                                ForEach(difficulties, id: \.self) { level in
+                                    Button(action: { difficulty = level }) {
+                                        Text(level.capitalized)
+                                            .font(.system(size: 13, weight: .semibold, design: .rounded))
+                                            .foregroundColor(difficulty == level ? .black : .white.opacity(0.8))
+                                            .frame(maxWidth: .infinity)
+                                            .padding(.vertical, 10)
+                                            .background(difficulty == level ? Color.white : Color(red: 0.12, green: 0.12, blue: 0.14))
+                                            .cornerRadius(8)
+                                    }
+                                    .buttonStyle(PlainButtonStyle())
+                                }
+                            }
+                        }
+
+                        Divider()
+                            .background(Color.white.opacity(0.08))
+
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("QUESTIONS")
+                                .font(.system(size: 11, weight: .bold))
+                                .foregroundColor(.secondary)
+                                .tracking(1)
+
+                            HStack(spacing: 6) {
+                                ForEach(amounts, id: \.self) { n in
+                                    Button(action: { amount = n }) {
+                                        Text("\(n)")
+                                            .font(.system(size: 13, weight: .semibold, design: .rounded))
+                                            .foregroundColor(amount == n ? .black : .white.opacity(0.8))
+                                            .frame(maxWidth: .infinity)
+                                            .padding(.vertical, 10)
+                                            .background(amount == n ? Color.white : Color(red: 0.12, green: 0.12, blue: 0.14))
+                                            .cornerRadius(8)
+                                    }
+                                    .buttonStyle(PlainButtonStyle())
+                                }
+                            }
+                        }
+
+                        Divider()
+                            .background(Color.white.opacity(0.08))
+
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("TIMER PER QUESTION")
+                                .font(.system(size: 11, weight: .bold))
+                                .foregroundColor(.secondary)
+                                .tracking(1)
+
+                            HStack(spacing: 6) {
+                                ForEach(timerOptions, id: \.self) { seconds in
+                                    Button(action: { timerSeconds = seconds }) {
+                                        Text(timerLabel(seconds))
+                                            .font(.system(size: 13, weight: .semibold, design: .rounded))
+                                            .foregroundColor(timerSeconds == seconds ? .black : .white.opacity(0.8))
+                                            .frame(maxWidth: .infinity)
+                                            .padding(.vertical, 10)
+                                            .background(timerSeconds == seconds ? Color.white : Color(red: 0.12, green: 0.12, blue: 0.14))
+                                            .cornerRadius(8)
+                                    }
+                                    .buttonStyle(PlainButtonStyle())
+                                }
+                            }
+                        }
+
+                        Divider()
+                            .background(Color.white.opacity(0.08))
                     }
+                    .padding(.horizontal, 24)
+                    .padding(.bottom, 24)
                 }
 
                 NavigationLink(destination: QuizView()) {
@@ -187,17 +247,14 @@ struct QuizMenuView: View {
                 }
                 .buttonStyle(PlainButtonStyle())
                 .padding(.horizontal, 24)
-                .padding(.vertical, 16)
+                .padding(.bottom, 40)
+                .padding(.top, 10)
             }
         }
-        .background(
-            LinearGradient(
-                colors: [Color(red: 0.07, green: 0.08, blue: 0.10), Color.black],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-        )
         .toolbar(.hidden, for: .tabBar)
+        .onAppear {
+            SessionStore.shared.isTabBarHidden = true
+        }
     }
 }
 

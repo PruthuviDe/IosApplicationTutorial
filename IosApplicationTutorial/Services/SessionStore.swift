@@ -6,6 +6,7 @@ class SessionStore: ObservableObject {
     static let shared = SessionStore()
 
     @Published private(set) var sessions: [GameSession] = []
+    @Published var isTabBarHidden: Bool = false
 
     private let key = "gameSessions"
 
@@ -23,6 +24,29 @@ class SessionStore: ObservableObject {
     }
 
     var totalGamesPlayed: Int { sessions.count }
+
+    var activeStreak: Int {
+        guard let latestSession = sessions.sorted(by: { $0.timestamp > $1.timestamp }).first else { return 0 }
+        
+        let calendar = Calendar.current
+        let today = Date()
+        
+        if !calendar.isDateInToday(latestSession.timestamp) && !calendar.isDateInYesterday(latestSession.timestamp) {
+            return 0
+        }
+        
+        var currentStreak = 0
+        var dateToCheck = latestSession.timestamp
+        let allDates = Set(sessions.map { calendar.startOfDay(for: $0.timestamp) })
+        
+        while allDates.contains(calendar.startOfDay(for: dateToCheck)) {
+            currentStreak += 1
+            guard let previousDay = calendar.date(byAdding: .day, value: -1, to: dateToCheck) else { break }
+            dateToCheck = previousDay
+        }
+        
+        return currentStreak
+    }
 
     var totalScore: Int { sessions.reduce(0) { $0 + $1.score } }
 

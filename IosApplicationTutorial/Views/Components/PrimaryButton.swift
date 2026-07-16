@@ -7,52 +7,44 @@ struct PrimaryButton: View {
     var color: Color = .purple
 
     var body: some View {
-        HStack(spacing: 8) {
-            if let icon = icon {
-                Image(systemName: icon)
-                    .font(.system(size: 15, weight: .bold))
-            }
-            Text(title)
-                .font(.system(size: 15, weight: .bold, design: .rounded))
+        HStack(spacing: 12) {
+            Image(systemName: "play.fill")
+                .font(.system(size: 12, weight: .black))
+                .foregroundColor(color)
+            
+            Text(title.uppercased())
+                .font(.system(size: 15, weight: .black, design: .monospaced))
+                .foregroundColor(.white)
+                .tracking(1.5)
         }
-        .foregroundColor(.white)
         .frame(width: 240) 
-        .padding(.vertical, 14) 
+        .padding(.vertical, 15) 
         .background(
-            LinearGradient(
-                colors: [color, color.opacity(0.85)],
-                startPoint: .top,
-                endPoint: .bottom
-            )
+            Color(red: 0.07, green: 0.08, blue: 0.11)
         )
-        .clipShape(Capsule()) 
+        .cornerRadius(4)
         .overlay(
-            Capsule()
-                .stroke(Color.white.opacity(0.15), lineWidth: 1.2) 
+            RoundedRectangle(cornerRadius: 4)
+                .stroke(color, lineWidth: 3)
         )
-        .shadow(
-            color: Color.black.opacity(0.35), 
-            radius: 5,
-            x: 0,
-            y: 3
-        )
+        .shadow(color: color.opacity(0.55), radius: 0, x: 5, y: 5)
     }
 }
 
 #Preview {
-    VStack(spacing: 16) {
-        PrimaryButton(
-            title: "START GAME",
-            icon: "play.fill",
-            color: Color(red: 0.20, green: 0.83, blue: 0.95)
-        )
-        
-        PrimaryButton(
-            title: "PLAY AGAIN",
-            icon: "arrow.clockwise",
-            color: .purple
-        )
+    ZStack {
+        Color(red: 0.05, green: 0.06, blue: 0.08).ignoresSafeArea()
+        VStack(spacing: 24) {
+            PrimaryButton(
+                title: "START GAME",
+                color: .orange
+            )
+            
+            PrimaryButton(
+                title: "PLAY AGAIN",
+                color: .cyan
+            )
+        }
+        .padding()
     }
-    .padding()
-    .background(Color.black)
 }

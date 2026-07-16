@@ -14,8 +14,15 @@ final class TapFrenzyViewModel: ObservableObject {
 
     private var lastTapTime    = Date()
     private var bonusBurstStart = 5
+    private let initialDuration: Int
 
     let timer = Timer.publish(every: 1.0, on: .main, in: .common).autoconnect()
+
+    init(duration: Int = 10) {
+        self.initialDuration = duration
+        self.timeRemaining = duration
+        self.bonusBurstStart = duration / 2
+    }
 
     func handleTap() {
         if !gameStarted {
@@ -77,13 +84,13 @@ final class TapFrenzyViewModel: ObservableObject {
 
     func restart() {
         score           = 0
-        timeRemaining   = 10
+        timeRemaining   = initialDuration
         comboMultiplier = 1
         lastTapTime     = Date()
         buttonType      = .normal
         gameStarted     = false
         isBonusBurst    = false
-        bonusBurstStart = 5
+        bonusBurstStart = initialDuration / 2
         buttonOffsetX   = 0.0
         buttonOffsetY   = 0.0
         buttonPressed   = false

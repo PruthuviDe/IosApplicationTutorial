@@ -13,76 +13,83 @@ struct SettingsTab: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                RadialGradient(
-                    colors: [Color(red: 0.35, green: 0.40, blue: 0.50).opacity(0.35), Color(red: 0.08, green: 0.09, blue: 0.14)],
-                    center: .top,
-                    startRadius: 10,
-                    endRadius: 400
-                )
-                .ignoresSafeArea()
-
-                VStack(spacing: 0) {
-
-                    HStack {
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text("App Configurations")
-                                .font(.system(size: 14, weight: .medium, design: .rounded))
-                                .foregroundColor(.white.opacity(0.4))
-                            
-                            Text("Settings")
-                                .font(.system(size: 28, weight: .black, design: .rounded))
-                                .foregroundColor(.white)
-                        }
-                        Spacer()
-                    }
-                    .padding(.horizontal, 24)
-                    .padding(.top, 24)
-                    .padding(.bottom, 20)
-
-                    ScrollView(showsIndicators: false) {
-                        VStack(spacing: 24) {
-
-                            VStack(alignment: .leading, spacing: 14) {
-                                sectionHeader("PLAYER PROFILE")
-
-                                HStack {
-                                    Label("Display Name", systemImage: "person.fill")
-                                        .font(.system(size: 15, weight: .semibold, design: .rounded))
-                                        .foregroundColor(.white)
-                                    Spacer()
-                                    TextField("Your name", text: $playerName)
-                                        .font(.system(size: 15, weight: .medium, design: .rounded))
-                                        .foregroundColor(.white.opacity(0.7))
-                                        .multilineTextAlignment(.trailing)
-                                        .frame(maxWidth: 140)
-                                        .autocorrectionDisabled()
+                Color(red: 0.05, green: 0.06, blue: 0.08).ignoresSafeArea()
+                
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: 28) {
+                        
+                        VStack(alignment: .leading, spacing: 0) {
+                            HStack(spacing: 20) {
+                                ZStack {
+                                    Image("player_avatar")
+                                        .resizable()
+                                        .aspectRatio(contentMode: .fill)
+                                        .frame(width: 64, height: 64)
+                                        .clipShape(Circle())
+                                        .overlay(
+                                            Circle()
+                                                .stroke(Color.white.opacity(0.15), lineWidth: 1.5)
+                                        )
                                 }
-                                .padding(.vertical, 4)
+                                
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text("PLAYER PROFILE")
+                                        .font(.system(size: 11, weight: .bold))
+                                        .foregroundColor(.secondary)
+                                        .tracking(1.5)
+                                    
+                                    HStack(spacing: 6) {
+                                        TextField("Your name", text: $playerName)
+                                            .font(.system(size: 20, weight: .black, design: .rounded))
+                                            .foregroundColor(.white)
+                                            .autocorrectionDisabled()
+                                            .frame(maxWidth: 180)
+                                        
+                                        Image(systemName: "pencil")
+                                            .font(.system(size: 14))
+                                            .foregroundColor(.white.opacity(0.4))
+                                    }
+                                }
+                                Spacer()
                             }
-                            .padding(16)
+                            .padding(20)
                             .background(
-                                LinearGradient(
-                                    colors: [Color.white.opacity(0.08), Color.white.opacity(0.03)],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                )
+                                RoundedRectangle(cornerRadius: 24)
+                                    .fill(Color.white.opacity(0.03))
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 24)
+                                            .stroke(
+                                                LinearGradient(
+                                                    colors: [.white.opacity(0.08), .white.opacity(0.01)],
+                                                    startPoint: .topLeading,
+                                                    endPoint: .bottomTrailing
+                                                ),
+                                                lineWidth: 1
+                                            )
+                                    )
                             )
-                            .cornerRadius(16)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 16)
-                                    .stroke(Color.white.opacity(0.12), lineWidth: 1)
-                            )
-
-                            VStack(alignment: .leading, spacing: 14) {
-                                sectionHeader("DAILY CHALLENGE")
-
+                        }
+                        .padding(.horizontal, 24)
+                        .padding(.top, 20)
+                        
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text("GAME ALERTS")
+                                .font(.system(size: 12, weight: .bold))
+                                .foregroundColor(.secondary)
+                                .tracking(1.0)
+                                .padding(.horizontal, 24)
+                            
+                            VStack(spacing: 0) {
                                 Toggle(isOn: $notificationsEnabled) {
-                                    Label("Enable Notifications", systemImage: "bell.fill")
-                                        .font(.system(size: 15, weight: .semibold, design: .rounded))
-                                        .foregroundColor(.white)
+                                    HStack {
+                                        SettingIcon(icon: "bell.fill", color: Color(red: 0.92, green: 0.26, blue: 0.35))
+                                        Text("Daily Reminders")
+                                            .font(.system(size: 16, weight: .semibold, design: .rounded))
+                                            .foregroundColor(.primary)
+                                    }
                                 }
                                 .tint(Color(red: 0.65, green: 0.35, blue: 0.95))
-                                .padding(.vertical, 4)
+                                .padding(16)
                                 .onChange(of: notificationsEnabled) {
                                     if notificationsEnabled {
                                         NotificationService.shared.requestPermission()
@@ -91,152 +98,161 @@ struct SettingsTab: View {
                                         NotificationService.shared.cancelAll()
                                     }
                                 }
-
+                                
                                 if notificationsEnabled {
                                     Divider()
-                                        .background(Color.white.opacity(0.08))
-
-                                    DatePicker(
-                                        "Challenge Time",
-                                        selection: $challengeTime,
-                                        displayedComponents: .hourAndMinute
-                                    )
-                                    .datePickerStyle(.compact)
-                                    .colorScheme(.dark)
-                                    .font(.system(size: 15, weight: .semibold, design: .rounded))
-                                    .padding(.vertical, 4)
-                                    .onChange(of: challengeTime) {
-                                        let cal = Calendar.current
-                                        let h = cal.component(.hour, from: challengeTime)
-                                        let m = cal.component(.minute, from: challengeTime)
-                                        challengeHour = h
-                                        challengeMinute = m
-                                        NotificationService.shared.scheduleDailyChallenge(hour: h, minute: m)
+                                        .padding(.leading, 56)
+                                    
+                                    HStack {
+                                        SettingIcon(icon: "clock.fill", color: Color(red: 0.20, green: 0.83, blue: 0.95))
+                                        Text("Alert Time")
+                                            .font(.system(size: 16, weight: .semibold, design: .rounded))
+                                            .foregroundColor(.primary)
+                                        Spacer()
+                                        DatePicker(
+                                            "",
+                                            selection: $challengeTime,
+                                            displayedComponents: .hourAndMinute
+                                        )
+                                        .labelsHidden()
+                                        .onChange(of: challengeTime) {
+                                            let cal = Calendar.current
+                                            let h = cal.component(.hour, from: challengeTime)
+                                            let m = cal.component(.minute, from: challengeTime)
+                                            challengeHour = h
+                                            challengeMinute = m
+                                            NotificationService.shared.scheduleDailyChallenge(hour: h, minute: m)
+                                        }
                                     }
+                                    .padding(16)
                                 }
                             }
-                            .padding(16)
                             .background(
-                                LinearGradient(
-                                    colors: [Color.white.opacity(0.08), Color.white.opacity(0.03)],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                )
+                                RoundedRectangle(cornerRadius: 20)
+                                    .fill(Color.white.opacity(0.03))
+                                    .overlay(RoundedRectangle(cornerRadius: 20).stroke(Color.white.opacity(0.06), lineWidth: 1))
                             )
-                            .cornerRadius(16)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 16)
-                                    .stroke(Color.white.opacity(0.12), lineWidth: 1)
-                            )
-
-                            VStack(alignment: .leading, spacing: 14) {
-                                sectionHeader("DATA & HISTORY")
-
+                            .padding(.horizontal, 24)
+                        }
+                        
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text("PLAYER DATA")
+                                .font(.system(size: 12, weight: .bold))
+                                .foregroundColor(.secondary)
+                                .tracking(1.0)
+                                .padding(.horizontal, 24)
+                            
+                            VStack(spacing: 0) {
                                 HStack {
-                                    Label("Games Recorded", systemImage: "gamecontroller.fill")
-                                        .font(.system(size: 15, weight: .semibold, design: .rounded))
-                                        .foregroundColor(.white)
+                                    SettingIcon(icon: "gamecontroller.fill", color: Color(red: 0.65, green: 0.35, blue: 0.95))
+                                    Text("Games Recorded")
+                                        .font(.system(size: 16, weight: .semibold, design: .rounded))
+                                        .foregroundColor(.primary)
                                     Spacer()
                                     Text("\(store.totalGamesPlayed)")
-                                        .font(.system(size: 15, weight: .bold, design: .rounded))
-                                        .foregroundColor(.white.opacity(0.40))
+                                        .font(.system(size: 16, weight: .bold, design: .rounded))
+                                        .foregroundColor(.secondary)
                                 }
-                                .padding(.vertical, 4)
-
+                                .padding(16)
+                                
                                 Divider()
-                                    .background(Color.white.opacity(0.08))
-
+                                    .padding(.leading, 56)
+                                
                                 Button {
                                     showResetConfirm = true
                                 } label: {
-                                    Label("Reset All Stats", systemImage: "trash.fill")
-                                        .font(.system(size: 15, weight: .bold, design: .rounded))
-                                        .foregroundColor(Color(red: 0.92, green: 0.26, blue: 0.35))
-                                        .frame(maxWidth: .infinity, alignment: .leading)
-                                        .padding(.vertical, 4)
-                                }
-                                .confirmationDialog(
-                                    "Reset All Stats?",
-                                    isPresented: $showResetConfirm,
-                                    titleVisibility: .visible
-                                ) {
-                                    Button("Reset Everything", role: .destructive) {
-                                        store.resetAll()
+                                    HStack {
+                                        SettingIcon(icon: "trash.fill", color: .red)
+                                        Text("Reset All Stats")
+                                            .font(.system(size: 16, weight: .semibold, design: .rounded))
+                                            .foregroundColor(.red)
+                                        Spacer()
                                     }
-                                    Button("Cancel", role: .cancel) { }
-                                } message: {
-                                    Text("This will permanently delete all game sessions, scores, and history.")
                                 }
+                                .padding(16)
                             }
-                            .padding(16)
                             .background(
-                                LinearGradient(
-                                    colors: [Color.white.opacity(0.08), Color.white.opacity(0.03)],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                )
+                                RoundedRectangle(cornerRadius: 20)
+                                    .fill(Color.white.opacity(0.03))
+                                    .overlay(RoundedRectangle(cornerRadius: 20).stroke(Color.white.opacity(0.06), lineWidth: 1))
                             )
-                            .cornerRadius(16)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 16)
-                                    .stroke(Color.white.opacity(0.12), lineWidth: 1)
-                            )
-
-                            VStack(alignment: .leading, spacing: 14) {
-                                sectionHeader("ABOUT APP")
-
+                            .padding(.horizontal, 24)
+                        }
+                        
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text("ABOUT APP")
+                                .font(.system(size: 12, weight: .bold))
+                                .foregroundColor(.secondary)
+                                .tracking(1.0)
+                                .padding(.horizontal, 24)
+                            
+                            VStack(spacing: 0) {
                                 HStack {
-                                    Label("GameVault", systemImage: "gamecontroller.fill")
-                                        .font(.system(size: 15, weight: .semibold, design: .rounded))
-                                        .foregroundColor(.white)
+                                    SettingIcon(icon: "info.circle.fill", color: .gray)
+                                    Text("GameVault")
+                                        .font(.system(size: 16, weight: .semibold, design: .rounded))
+                                        .foregroundColor(.primary)
                                     Spacer()
                                     Text("v1.2.0")
-                                        .font(.system(size: 15, weight: .bold, design: .rounded))
-                                        .foregroundColor(.white.opacity(0.40))
+                                        .font(.system(size: 14, weight: .bold, design: .rounded))
+                                        .foregroundColor(.secondary)
                                 }
-                                .padding(.vertical, 4)
+                                .padding(16)
                             }
-                            .padding(16)
                             .background(
-                                LinearGradient(
-                                    colors: [Color.white.opacity(0.08), Color.white.opacity(0.03)],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                )
+                                RoundedRectangle(cornerRadius: 20)
+                                    .fill(Color.white.opacity(0.03))
+                                    .overlay(RoundedRectangle(cornerRadius: 20).stroke(Color.white.opacity(0.06), lineWidth: 1))
                             )
-                            .cornerRadius(16)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 16)
-                                    .stroke(Color.white.opacity(0.12), lineWidth: 1)
-                            )
+                            .padding(.horizontal, 24)
                         }
-                        .padding(.horizontal, 24)
-                        .padding(.bottom, 24)
                     }
+                    .padding(.bottom, 120)
                 }
             }
-            .background(
-                LinearGradient(
-                    colors: [Color(red: 0.08, green: 0.09, blue: 0.14), Color(red: 0.12, green: 0.14, blue: 0.20)],
-                    startPoint: .top,
-                    endPoint: .bottom
-                )
-            )
             .onAppear {
                 var comps = DateComponents()
                 comps.hour = challengeHour
                 comps.minute = challengeMinute
                 challengeTime = Calendar.current.date(from: comps) ?? Date()
+                SessionStore.shared.isTabBarHidden = false
+            }
+            .confirmationDialog(
+                "Reset All Stats?",
+                isPresented: $showResetConfirm,
+                titleVisibility: .visible
+            ) {
+                Button("Reset Everything", role: .destructive) {
+                    store.resetAll()
+                }
+                Button("Cancel", role: .cancel) { }
+            } message: {
+                Text("This will permanently delete all game sessions, scores, and history.")
             }
         }
     }
+}
 
-    private func sectionHeader(_ text: String) -> some View {
-        Text(text)
-            .font(.system(size: 11, weight: .bold))
-            .foregroundColor(Color(red: 0.65, green: 0.35, blue: 0.95))
-            .tracking(1.5)
-            .padding(.bottom, 2)
+struct SettingIcon: View {
+    let icon: String
+    let color: Color
+    
+    var body: some View {
+        let isDestructive = icon == "trash.fill"
+        ZStack {
+            RoundedRectangle(cornerRadius: 10)
+                .fill(isDestructive ? Color.red.opacity(0.08) : Color.white.opacity(0.04))
+                .frame(width: 36, height: 36)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 10)
+                        .stroke(isDestructive ? Color.red.opacity(0.15) : Color.white.opacity(0.08), lineWidth: 1)
+                )
+            
+            Image(systemName: icon)
+                .font(.system(size: 14, weight: .semibold))
+                .foregroundColor(isDestructive ? .red : .white.opacity(0.75))
+        }
+        .padding(.trailing, 8)
     }
 }
 

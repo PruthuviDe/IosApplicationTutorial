@@ -44,7 +44,9 @@ struct QuizView: View {
         )
         .overlay(flashColor.ignoresSafeArea().allowsHitTesting(false))
         .toolbar(.hidden, for: .tabBar)
-
+        .onAppear {
+            SessionStore.shared.isTabBarHidden = true
+        }
         .task {
             await viewModel.load()
         }
@@ -145,28 +147,28 @@ struct QuizView: View {
                     Text("\(viewModel.score)")
                         .font(.system(size: 32, weight: .black, design: .rounded))
                         .foregroundColor(.white)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.8)
                 }
-                .frame(width: 80, alignment: .leading)
+                .frame(width: 100, alignment: .leading)
 
                 Spacer()
 
-                VStack {
+                VStack(alignment: .center, spacing: 4) {
+                    Text("STREAK")
+                        .font(.system(size: 11, weight: .bold))
+                        .foregroundColor(.white.opacity(0.4))
                     if viewModel.streak > 0 {
-                        HStack(spacing: 4) {
-                            Image(systemName: "flame.fill")
-                                .font(.system(size: 12))
-                            Text("\(viewModel.streak) streak")
-                        }
-                        .font(.system(size: 11, weight: .bold, design: .rounded))
-                        .foregroundColor(.orange)
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 4)
-                        .background(Color.orange.opacity(0.12))
-                        .cornerRadius(8)
+                        Text("\(viewModel.streak)")
+                            .font(.system(size: 32, weight: .black, design: .rounded))
+                            .foregroundColor(.orange)
+                    } else {
+                        Text("-")
+                            .font(.system(size: 32, weight: .black, design: .rounded))
+                            .foregroundColor(.white.opacity(0.25))
                     }
                 }
-                .frame(maxHeight: .infinity, alignment: .center)
-                .padding(.top, 4)
+                .animation(.easeInOut(duration: 0.25), value: viewModel.streak)
 
                 Spacer()
 
@@ -177,8 +179,10 @@ struct QuizView: View {
                     Text("\(viewModel.currentIndex + 1)/\(viewModel.questions.count)")
                         .font(.system(size: 32, weight: .black, design: .rounded))
                         .foregroundColor(.white)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.8)
                 }
-                .frame(width: 80, alignment: .trailing)
+                .frame(width: 100, alignment: .trailing)
             }
             .padding(.horizontal, 24)
             .padding(.top, 16)
