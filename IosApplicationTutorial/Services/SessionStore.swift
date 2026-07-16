@@ -29,7 +29,6 @@ class SessionStore: ObservableObject {
         guard let latestSession = sessions.sorted(by: { $0.timestamp > $1.timestamp }).first else { return 0 }
         
         let calendar = Calendar.current
-        let today = Date()
         
         if !calendar.isDateInToday(latestSession.timestamp) && !calendar.isDateInYesterday(latestSession.timestamp) {
             return 0
