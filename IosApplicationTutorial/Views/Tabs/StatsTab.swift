@@ -117,29 +117,24 @@ struct StatsTab: View {
                                         } else {
                                             Chart {
                                                 ForEach(chartData, id: \.index) { item in
-                                                    LineMark(
+                                                    BarMark(
                                                         x: .value("Game", item.index + 1),
-                                                        y: .value("Score", item.session.score)
+                                                        y: .value("Score", item.session.score),
+                                                        width: .fixed(12)
                                                     )
-                                                    .interpolationMethod(.catmullRom)
-                                                    .foregroundStyle(chartColor)
-                                                    .lineStyle(StrokeStyle(lineWidth: 3))
-                                                    
-                                                    AreaMark(
-                                                        x: .value("Game", item.index + 1),
-                                                        y: .value("Score", item.session.score)
-                                                    )
-                                                    .interpolationMethod(.catmullRom)
                                                     .foregroundStyle(
                                                         LinearGradient(
-                                                            colors: [chartColor.opacity(0.4), chartColor.opacity(0.0)],
+                                                            colors: [chartColor, chartColor.opacity(0.3)],
                                                             startPoint: .top,
                                                             endPoint: .bottom
                                                         )
                                                     )
+                                                    .cornerRadius(4)
                                                 }
                                             }
                                             .frame(height: 200)
+                                            .chartScrollableAxes(.horizontal)
+                                            .chartXVisibleDomain(length: 15)
                                             .chartXAxis {
                                                 AxisMarks(values: .automatic) { _ in
                                                     AxisValueLabel()
@@ -151,9 +146,9 @@ struct StatsTab: View {
                                                 AxisMarks(position: .leading) { value in
                                                     AxisGridLine()
                                                         .foregroundStyle(Color.white.opacity(0.05))
-                                                    AxisValueLabel()
+                                                     AxisValueLabel()
                                                         .foregroundStyle(Color.secondary.opacity(0.5))
-                                                        .font(.system(size: 10, weight: .bold))
+                                                         .font(.system(size: 10, weight: .bold))
                                                 }
                                             }
                                         }
