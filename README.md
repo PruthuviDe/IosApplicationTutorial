@@ -8,6 +8,7 @@
 ## Table of Contents
 
 - [Overview](#overview)
+- [Screenshots](#screenshots)
 - [Tech Stack](#tech-stack)
 - [Architecture](#architecture)
 - [Folder Structure](#folder-structure)
@@ -21,6 +22,29 @@
 ## Overview
 
 GameVault is a native iOS gaming hub that houses three distinct mini-games inside a unified, dark-themed shell application. The app integrates real device capabilities — CoreLocation, UserNotifications, MapKit, SwiftUI Charts, and a live REST API — into a cohesive, production-quality experience built entirely in SwiftUI.
+
+---
+
+## Screenshots
+
+<table>
+  <tr>
+    <td align="center"><b>🎮 Games (Home)</b></td>
+    <td align="center"><b>📊 Stats</b></td>
+  </tr>
+  <tr>
+    <td><img src="https://i.ibb.co/ycNMXD44/image.png" width="220"/></td>
+    <td><img src="https://i.ibb.co/FbhFgH8d/image.png" width="220"/></td>
+  </tr>
+  <tr>
+    <td align="center"><b>🗺️ Map</b></td>
+    <td align="center"><b>⚙️ Settings</b></td>
+  </tr>
+  <tr>
+    <td><img src="https://i.ibb.co/kVSbC0f4/image.png" width="220"/></td>
+    <td><img src="https://i.ibb.co/6cVqYxgg/image.png" width="220"/></td>
+  </tr>
+</table>
 
 ---
 
