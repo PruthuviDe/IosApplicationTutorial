@@ -168,7 +168,7 @@ struct MapTab: View {
                                 }
                             }
                         }
-                        .mapStyle(.standard(pointsOfInterest: .all, showsTraffic: false))
+                        .mapStyle(.standard(pointsOfInterest: .excludingAll, showsTraffic: false))
                         .mapControls {
                             MapCompass()
                             MapScaleView()

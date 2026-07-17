@@ -88,7 +88,7 @@ struct SettingsTab: View {
                                             .foregroundColor(.primary)
                                     }
                                 }
-                                .tint(Color(red: 0.65, green: 0.35, blue: 0.95))
+                                .tint(Color(red: 0.20, green: 0.83, blue: 0.95))
                                 .padding(16)
                                 .onChange(of: notificationsEnabled) {
                                     if notificationsEnabled {

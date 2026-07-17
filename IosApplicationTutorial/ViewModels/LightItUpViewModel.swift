@@ -85,7 +85,7 @@ final class LightItUpViewModel: ObservableObject {
 
     var gridColumns: [GridItem] {
         let count = roundLength > 0 ? timedLevel.cardCount : difficulty.cardCount
-        let cols = count <= 4 ? 2 : 3
+        let cols = count == 3 ? 3 : (count == 4 ? 2 : 3)
         return Array(repeating: GridItem(.fixed(82)), count: cols)
     }
 
@@ -177,8 +177,16 @@ final class LightItUpViewModel: ObservableObject {
     }
 
     func tapCard(index: Int) {
-        guard index < cards.count, cards[index].isLit else { return }
-        let diff = difficulty
+        guard index < cards.count else { return }
+
+        guard cards[index].isLit else {
+            lives -= 1
+            flashWrong()
+            clearAllLit()
+            sequenceTarget = []
+            sequenceStep   = 0
+            return
+        }
 
         let currentColorCount = roundLength > 0 ? timedLevel.colorCount : difficulty.colorCount
         let currentSeqLen = roundLength > 0 ? 0 : difficulty.sequenceLength

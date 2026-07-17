@@ -103,7 +103,7 @@ struct LightItUpView: View {
                 Text("LEVEL")
                     .font(.system(size: 11, weight: .bold))
                     .foregroundColor(.white.opacity(0.4))
-                Text(vm.roundLength > 0 ? "L\(vm.levelNumber)" : "\(vm.levelNumber)")
+                Text("\(vm.levelNumber)")
                     .font(.system(size: 32, weight: .black, design: .rounded))
                     .foregroundColor(vm.levelAccentColor)
                     .lineLimit(1)

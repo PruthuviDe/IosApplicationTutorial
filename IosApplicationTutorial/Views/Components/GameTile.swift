@@ -1,6 +1,5 @@
 import SwiftUI
 
-// MARK: - HeroGameTile
 struct HeroGameTile: View {
     let mode: GameMode
     let destination: AnyView
@@ -168,3 +167,4 @@ struct GridGameTile: View {
         .buttonStyle(PlainButtonStyle())
     }
 }
+
