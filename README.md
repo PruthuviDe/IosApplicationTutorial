@@ -44,26 +44,43 @@ GameVault is a native iOS gaming hub that houses three distinct mini-games insid
 
 GameVault follows a strict **MVVM (Model-View-ViewModel)** architecture with services extracted into dedicated singleton classes.
 
-```
-┌─────────────────────────────────────────────────────┐
-│                       Views                          │
-│   Tabs/         Games/          Components/          │
-│  HomeTab       TapFrenzy        GameTile             │
-│  StatsTab      LightItUp        ScoreBadge           │
-│  MapTab        QuizRush         PrimaryButton        │
-│  SettingsTab                                         │
-└──────────────────┬──────────────────────────────────┘
-                   │ observes / calls
-┌──────────────────▼──────────────────────────────────┐
-│               ViewModels & Services                  │
-│   QuizViewModel    SessionStore   LocationService    │
-│                    NotificationService QuizService   │
-└──────────────────┬──────────────────────────────────┘
-                   │ uses
-┌──────────────────▼──────────────────────────────────┐
-│                     Models                           │
-│         GameMode    GameSession    QuizQuestion      │
-└─────────────────────────────────────────────────────┘
+```mermaid
+flowchart TD
+    subgraph Views["🖼️ Views"]
+        direction LR
+        Tabs["Tabs\nHomeTab · StatsTab · MapTab · SettingsTab"]
+        Games["Games\nTapFrenzy · LightItUp · QuizRush"]
+        Components["Components\nGameTile · ScoreBadge · PrimaryButton"]
+    end
+
+    subgraph ViewModels["⚙️ ViewModels"]
+        TFV["TapFrenzyViewModel\nCombo · Burst · Timer"]
+        LIU["LightItUpViewModel\nGrid · Lives · Difficulty"]
+        QV["QuizViewModel\nasync load() · answer()"]
+        SVM["StatsViewModel\nBridges SessionStore → Stats"]
+    end
+
+    subgraph Services["🔧 Services"]
+        SS["SessionStore\nJSON · UserDefaults"]
+        LS["LocationService\nCoreLocation"]
+        NS["NotificationService\nUNUserNotificationCenter"]
+        QS["QuizService\nOpenTDB REST API"]
+    end
+
+    subgraph Models["📦 Models"]
+        GM["GameMode"]
+        GS["GameSession"]
+        QQ["QuizQuestion"]
+        Card["Card"]
+        TBT["TapButtonType"]
+        DS["DifficultySnapshot"]
+    end
+
+    Views -->|"observes @Published state"| ViewModels
+    Views -->|"reads / writes"| Services
+    ViewModels -->|"reads / writes"| Services
+    Services -->|"encodes / decodes"| Models
+    ViewModels -->|"uses"| Models
 ```
 
 ### Key Principles
@@ -111,6 +128,7 @@ IosApplicationTutorial/
 │   │
 │   ├── Games/
 │   │   ├── TapFrenzy/
+│   │   │   ├── TapFrenzyMenuView.swift      # Round length selector
 │   │   │   └── TapFrenzyView.swift          # Tap game with combos, traps, burst mode
 │   │   ├── LightItUp/
 │   │   │   ├── LightItUpMenuView.swift      # Mode + round length selector
@@ -195,13 +213,13 @@ IosApplicationTutorial/
 | MVVM restructure | Full folder hierarchy: Models, ViewModels, Services, Views |
 | GameSession model | Records id, mode, score, timestamp, and GPS coordinates |
 | SessionStore | JSON-encoded UserDefaults persistence for all sessions |
-| Stats tab | Total games, total score, personal bests, bar chart, recent games |
-| SwiftUI Charts | `BarMark` chart showing score history per game session |
-| Map tab | MapKit pins for every game location; tap for session detail sheet |
-| Settings tab | Daily notification toggle + time picker, data reset with confirmation |
+| Stats tab | Filter bar, unified overview HUD (games / best score / streak), scrollable bar chart, personal bests, recent games list |
+| SwiftUI Charts | Horizontally scrollable `BarMark` chart showing score history per session |
+| Map tab | Clean MapKit pins (POIs excluded) for every game location; tap for session detail callout |
+| Settings tab | Daily notification toggle + time picker, data reset with confirmation dialog |
 | ShareLink | Share score result on all three game over screens |
-| Custom artwork | Premium AI-generated game cover images in Home tiles and menus |
-| Glassmorphism UI | Gradient card backgrounds, radial background glow, bright borders |
+| Custom artwork | 3D clay-style matte game icons + cinematic background art in Home tiles and menus |
+| Dark matte UI | Dark card backgrounds, clean borders, consistent accent colours per game |
 
 ---
 
@@ -246,14 +264,14 @@ open IosApplicationTutorial.xcodeproj
 
 ## Reflection
 
-Building GameVault across four weeks was a genuinely rewarding experience in scaling a SwiftUI codebase from a single-screen prototype into a multi-feature, platform-integrated app.
+When I started this project, I honestly did not expect it to grow this much. I just had to build a game app in SwiftUI. But week by week, one small feature led to another, and by the end I had three completely different games, a stats dashboard, a live map, notifications, and real internet data all working together inside one app.
 
-**Week 1** established the importance of clean state management from the start — even a simple tap counter benefits from disciplined use of `@State` and `@AppStorage`. Adding combos and trap logic showed how quickly a simple mechanic can become interesting.
+The early weeks taught me how important it is to keep your state clean. Even something as simple as a tap counter becomes messy fast if you do not separate the logic from the UI. Once I started putting game logic inside ViewModels and letting the View just react to published state, everything became much easier to read and change. That habit carried through the whole project.
 
-**Week 2** introduced the first real architecture challenge: coordinating a timer, a grid state, level logic, and a lives system simultaneously inside SwiftUI's reactive model. Separating the grid state from the timer state was the key insight.
+The hardest part was coordinating a grid, a timer, a lives system, and a difficulty curve all at the same time in Light It Up. I had to write an algorithm that changed how many cards appear, how long they stay lit, and which colours show up based on the player's score and then do a completely separate version of that for timed mode. Getting those two paths to share the same game logic without duplicating code took real thinking.
 
-**Week 3** was the most technically educational. Implementing `async/await` with proper `ViewState` handling (loading, loaded, failed) made the difference between a fragile network call and a resilient user experience. Seeing MVVM click in practice — where the view simply reflects published state — was a turning point.
+Networking in Quiz Rush was the moment MVVM finally clicked for me. The View does not need to know whether data is loading or failed. It just looks at the ViewModel's state and shows the right screen. That felt like a proper way to build something.
 
-**Week 4** was about assembling everything into a coherent product. Integrating CoreLocation, MapKit annotations, UNUserNotifications, and SwiftUI Charts in a single sprint demonstrated how much Apple's native frameworks can accomplish with relatively little code. The most challenging aspect was ensuring all services are initialized cleanly in the App lifecycle and that `SessionStore` correctly bridges all three games through a single persistence layer.
+Week 4 surprised me the most. Connecting CoreLocation, MapKit, local notifications, SwiftUI Charts, and a shared data store all in one sprint was intense, but the reason it did not fall apart was because the previous weeks had already established clean boundaries between each part of the app.
 
-The biggest lesson: **architecture decisions made early pay compounding dividends**. The MVVM restructure in Week 4 was straightforward because the individual game logic was already reasonably contained. Had all state lived in a single `ContentView`, the refactor would have been painful.
+The biggest lesson overall: architecture decisions made early pay off later. And also  making something actually feel good to use takes more iterations than you expect.
