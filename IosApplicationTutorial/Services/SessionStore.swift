@@ -26,19 +26,50 @@ class SessionStore: ObservableObject {
     var totalGamesPlayed: Int { sessions.count }
 
     var activeStreak: Int {
-        guard let latestSession = sessions.sorted(by: { $0.timestamp > $1.timestamp }).first else { return 0 }
-        
         let calendar = Calendar.current
+        let today = calendar.startOfDay(for: Date())
         
-        if !calendar.isDateInToday(latestSession.timestamp) && !calendar.isDateInYesterday(latestSession.timestamp) {
+        let sessionsByDay = Dictionary(grouping: sessions) { session in
+            calendar.startOfDay(for: session.timestamp)
+        }
+        
+        var completedDates = Set<Date>()
+        for (day, daySessions) in sessionsByDay {
+            let weekday = calendar.component(.weekday, from: day)
+            let targetGame: GameMode
+            let targetScore: Int
+            
+            switch weekday {
+            case 1, 4: 
+                targetGame = .tapFrenzy
+                targetScore = 1000
+            case 2, 5: 
+                targetGame = .lightItUp
+                targetScore = 15
+            default: 
+                targetGame = .quizRush
+                targetScore = 50
+            }
+            
+            let completed = daySessions.contains { session in
+                session.mode == targetGame && session.score >= targetScore
+            }
+            
+            if completed {
+                completedDates.insert(day)
+            }
+        }
+        
+        guard let yesterday = calendar.date(byAdding: .day, value: -1, to: today) else { return 0 }
+        
+        if !completedDates.contains(today) && !completedDates.contains(yesterday) {
             return 0
         }
         
         var currentStreak = 0
-        var dateToCheck = latestSession.timestamp
-        let allDates = Set(sessions.map { calendar.startOfDay(for: $0.timestamp) })
+        var dateToCheck = completedDates.contains(today) ? today : yesterday
         
-        while allDates.contains(calendar.startOfDay(for: dateToCheck)) {
+        while completedDates.contains(dateToCheck) {
             currentStreak += 1
             guard let previousDay = calendar.date(byAdding: .day, value: -1, to: dateToCheck) else { break }
             dateToCheck = previousDay

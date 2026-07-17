@@ -66,6 +66,72 @@ struct HomeTab: View {
                         .padding(.bottom, 32)
 
                         if selectedCategory == "All" {
+                            let challenge = DailyChallengeManager.currentChallenge()
+                            let isCompleted = DailyChallengeManager.isCompleted(sessions: store.sessions)
+                            
+                            HStack(spacing: 16) {
+                                Image(challenge.gameMode.imageName)
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fill)
+                                    .frame(width: 48, height: 48)
+                                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 12)
+                                            .stroke(Color.white.opacity(0.12), lineWidth: 1)
+                                    )
+                                    .shadow(color: challenge.color.opacity(0.2), radius: 6, x: 0, y: 3)
+                                
+                                VStack(alignment: .leading, spacing: 3) {
+                                    Text("DAILY QUEST")
+                                        .font(.system(size: 10, weight: .bold))
+                                        .foregroundColor(isCompleted ? .green : challenge.color)
+                                        .tracking(1.2)
+                                    
+                                    Text(challenge.title)
+                                        .font(.system(size: 16, weight: .bold, design: .rounded))
+                                        .foregroundColor(.white)
+                                    
+                                    Text(challenge.description)
+                                        .font(.system(size: 13, weight: .medium, design: .rounded))
+                                        .foregroundColor(.secondary)
+                                }
+                                
+                                Spacer()
+                                
+                                if isCompleted {
+                                    Image(systemName: "checkmark.circle.fill")
+                                        .font(.system(size: 24, weight: .bold))
+                                        .foregroundColor(.green)
+                                        .shadow(color: .green.opacity(0.3), radius: 4, x: 0, y: 2)
+                                } else {
+                                    Image(systemName: "circle")
+                                        .font(.system(size: 24, weight: .regular))
+                                        .foregroundColor(.white.opacity(0.2))
+                                }
+                            }
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 16)
+                            .background(
+                                RoundedRectangle(cornerRadius: 20)
+                                    .fill(Color.white.opacity(0.02))
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 20)
+                                            .stroke(
+                                                LinearGradient(
+                                                    colors: [
+                                                        isCompleted ? Color.green.opacity(0.3) : challenge.color.opacity(0.2),
+                                                        Color.white.opacity(0.03)
+                                                    ],
+                                                    startPoint: .topLeading,
+                                                    endPoint: .bottomTrailing
+                                                ),
+                                                lineWidth: 1
+                                            )
+                                    )
+                            )
+                            .padding(.horizontal, 24)
+                            .padding(.bottom, 28)
+
                             HStack {
                                 Text("FEATURED GAME")
                                     .font(.system(size: 12, weight: .bold))
