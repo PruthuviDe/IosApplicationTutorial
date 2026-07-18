@@ -98,6 +98,7 @@ flowchart TD
         Card["Card"]
         TBT["TapButtonType"]
         DS["DifficultySnapshot"]
+        DC["DailyChallenge\nDailyChallengeManager"]
     end
 
     Views -->|"observes @Published state"| ViewModels
@@ -124,9 +125,10 @@ IosApplicationTutorial/
 │
 ├── Models/
 │   ├── Card.swift                            # Struct: id, isLit, CardColor enum
+│   ├── DailyChallenge.swift                  # DailyChallenge struct + DailyChallengeManager (weekday rotation)
 │   ├── DifficultySnapshot.swift              # Score-based difficulty algorithm for Light It Up
 │   ├── GameMode.swift                        # Enum: .tapFrenzy, .lightItUp, .quizRush
-│   │                                         # Properties: icon, imageName, accentColor, subtitle
+│   │                                         # Properties: icon, imageName, accentColor, subtitle, category
 │   ├── GameSession.swift                     # Struct: id, mode, score, timestamp, lat, lon
 │   ├── QuizQuestion.swift                    # Codable struct + HTML entity decoder
 │   └── TapButtonType.swift                   # Enum: .normal, .bonus, .trap for Tap Frenzy
@@ -170,9 +172,13 @@ IosApplicationTutorial/
 │       └── PrimaryButton.swift              # Reusable styled action button
 │
 └── Assets.xcassets/
-    ├── tap_frenzy.imageset/                 # Custom game artwork image
-    ├── light_it_up.imageset/                # Custom game artwork image
-    └── quiz_rush.imageset/                  # Custom game artwork image
+    ├── tap_frenzy.imageset/                 # 3D clay game icon — Tap Frenzy
+    ├── tap_frenzy_bg.imageset/              # Cinematic background art — Tap Frenzy menu
+    ├── light_it_up.imageset/                # 3D clay game icon — Light It Up
+    ├── light_it_up_bg.imageset/             # Cinematic background art — Light It Up menu
+    ├── quiz_rush.imageset/                  # 3D clay game icon — Quiz Rush
+    ├── quiz_rush_bg.imageset/               # Cinematic background art — Quiz Rush menu
+    └── player_avatar.imageset/              # Cyberpunk 3D player profile portrait
 ```
 
 ---
@@ -239,11 +245,15 @@ IosApplicationTutorial/
 | SessionStore | JSON-encoded UserDefaults persistence for all sessions |
 | Stats tab | Filter bar, unified overview HUD (games / best score / streak), scrollable bar chart, personal bests, recent games list |
 | SwiftUI Charts | Horizontally scrollable `BarMark` chart showing score history per session |
-| Map tab | Clean MapKit pins (POIs excluded) for every game location; tap for session detail callout |
+| Map tab | Clean MapKit pins (POIs excluded) for every game location; tap for session detail callout; filterable by game |
 | Settings tab | Daily notification toggle + time picker, data reset with confirmation dialog |
 | ShareLink | Share score result on all three game over screens |
 | Custom artwork | 3D clay-style matte game icons + cinematic background art in Home tiles and menus |
 | Dark matte UI | Dark card backgrounds, clean borders, consistent accent colours per game |
+| Game category filter | Home tab horizontal scroll filter (All / Action / Puzzle / Quiz / Adventure) |
+| Daily Challenge card | Weekday-based quest shown on Home; challenge rotates daily across all 3 games |
+| Challenge-gated streak | Streak only increments when the daily challenge is completed that day — not just any game session |
+| Dynamic notifications | 7 weekday-specific reminders scheduled locally; each one displays that day's exact challenge description |
 
 ---
 
@@ -280,9 +290,14 @@ open IosApplicationTutorial.xcodeproj
 |---|---|
 | **Quiz Rush offline** | No offline fallback — shows an error screen if the OpenTDB API is unreachable |
 | **Location accuracy** | Uses `kCLLocationAccuracyHundredMeters` to preserve battery; pins may appear slightly offset |
-| **Session storage limit** | All sessions stored in UserDefaults — not suitable for very large volumes (1000+ sessions) |
-| **ViewModels scope** | All 3 games use dedicated ViewModels; minor logic remains in QuizView for animation timing |
-| **No user profile** | Player name is editable in Settings and persists via `@AppStorage` — no authentication system |
+| **Simulator location** | Running on an iOS Simulator without a simulated GPS location stores `(0.0, 0.0)` — sessions appear in the ocean on the map. Physical device or a simulated location fix is required for accurate pins. |
+| **Session storage limit** | All sessions stored in `UserDefaults` — not suitable for very large volumes (1000+ sessions); no iCloud sync |
+| **ViewModels scope** | All 3 games use dedicated ViewModels; minor animation-timing logic remains inside `QuizView` directly |
+| **No user profile** | Player name is editable in Settings and persists via `@AppStorage` — no authentication or multi-user support |
+| **No pin clustering** | MapKit renders every individual session as its own pin; many sessions at the same location will overlap and stack visually |
+| **Combo multiplier cap** | Tap Frenzy combo multiplier has no upper bound — a very fast tap sequence can theoretically grow it unboundedly within a round |
+| **Notification re-prompt** | iOS only shows the permission popup once. If the user denies notifications, the in-app toggle silently has no effect — the user must manually enable it in iOS Settings → Notifications |
+| **Daily challenge reset** | The streak history is tied to the current weekday-rotation schedule. If the rotation targets are ever changed in a future update, historical streaks calculated against the old targets may be inaccurate |
 
 ---
 
