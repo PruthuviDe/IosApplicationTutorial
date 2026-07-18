@@ -162,7 +162,6 @@ IosApplicationTutorial/
 │   │
 │   └── Components/
 │       ├── GameTile.swift                   # Home screen game card with artwork
-│       ├── ScoreBadge.swift                 # Stat metric badge with icon + value
 │       └── PrimaryButton.swift              # Reusable styled action button
 │
 └── Assets.xcassets/
