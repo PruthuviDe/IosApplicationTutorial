@@ -69,45 +69,33 @@ GameVault is a native iOS gaming hub that houses three distinct mini-games insid
 GameVault follows a strict **MVVM (Model-View-ViewModel)** architecture with services extracted into dedicated singleton classes.
 
 ```mermaid
-flowchart LR
+flowchart TD
     subgraph VIEWS["VIEWS"]
-        direction TB
-        HomeTab
-        StatsTab
-        MapTab
-        SettingsTab
-        TapFrenzyView
-        LightItUpView
-        QuizRushView
-        ResultView
+        V1["Tabs\nHomeTab · StatsTab · MapTab · SettingsTab"]
+        V2["Games\nTapFrenzyView · LightItUpView · QuizRushView"]
+        V3["Shared\nResultView · GameTile · PrimaryButton"]
     end
 
     subgraph VIEWMODELS["VIEW MODELS"]
-        direction TB
-        TapFrenzyViewModel
-        LightItUpViewModel
-        QuizViewModel
-        StatsViewModel
+        VM1["TapFrenzyViewModel\nCombo · Burst · Timer"]
+        VM2["LightItUpViewModel\nGrid · Lives · Difficulty"]
+        VM3["QuizViewModel\nasync load · answer"]
+        VM4["StatsViewModel\nSessionStore bridge"]
     end
 
     subgraph SERVICES["SERVICES"]
-        direction TB
-        SessionStore
-        LocationService
-        NotificationService
-        QuizService
+        S1["SessionStore\nUserDefaults JSON persistence"]
+        S2["LocationService\nCoreLocation GPS"]
+        S3["NotificationService\nUNUserNotificationCenter"]
+        S4["QuizService\nOpenTDB REST API"]
     end
 
     subgraph MODELS["MODELS"]
-        direction TB
-        GameSession
-        GameMode
-        DailyChallenge
-        QuizQuestion
-        Card
+        M1["GameSession · GameMode · DailyChallenge"]
+        M2["QuizQuestion · Card · TapButtonType · DifficultySnapshot"]
     end
 
-    VIEWS -->|"observes @Published"| VIEWMODELS
+    VIEWS -->|"observes @Published state"| VIEWMODELS
     VIEWS -->|"reads / writes"| SERVICES
     VIEWMODELS -->|"calls"| SERVICES
     SERVICES -->|"encodes / decodes"| MODELS
