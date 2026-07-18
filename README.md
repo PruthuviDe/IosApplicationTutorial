@@ -69,43 +69,49 @@ GameVault is a native iOS gaming hub that houses three distinct mini-games insid
 GameVault follows a strict **MVVM (Model-View-ViewModel)** architecture with services extracted into dedicated singleton classes.
 
 ```mermaid
-flowchart TD
-    subgraph Views["🖼️ Views"]
-        direction LR
-        Tabs["Tabs\nHomeTab · StatsTab · MapTab · SettingsTab"]
-        Games["Games\nTapFrenzy · LightItUp · QuizRush"]
-        Components["Components\nGameTile · ScoreBadge · PrimaryButton"]
+flowchart LR
+    subgraph VIEWS["VIEWS"]
+        direction TB
+        HomeTab
+        StatsTab
+        MapTab
+        SettingsTab
+        TapFrenzyView
+        LightItUpView
+        QuizRushView
+        ResultView
     end
 
-    subgraph ViewModels["⚙️ ViewModels"]
-        TFV["TapFrenzyViewModel\nCombo · Burst · Timer"]
-        LIU["LightItUpViewModel\nGrid · Lives · Difficulty"]
-        QV["QuizViewModel\nasync load() · answer()"]
-        SVM["StatsViewModel\nBridges SessionStore → Stats"]
+    subgraph VIEWMODELS["VIEW MODELS"]
+        direction TB
+        TapFrenzyViewModel
+        LightItUpViewModel
+        QuizViewModel
+        StatsViewModel
     end
 
-    subgraph Services["🔧 Services"]
-        SS["SessionStore\nJSON · UserDefaults"]
-        LS["LocationService\nCoreLocation"]
-        NS["NotificationService\nUNUserNotificationCenter"]
-        QS["QuizService\nOpenTDB REST API"]
+    subgraph SERVICES["SERVICES"]
+        direction TB
+        SessionStore
+        LocationService
+        NotificationService
+        QuizService
     end
 
-    subgraph Models["📦 Models"]
-        GM["GameMode"]
-        GS["GameSession"]
-        QQ["QuizQuestion"]
-        Card["Card"]
-        TBT["TapButtonType"]
-        DS["DifficultySnapshot"]
-        DC["DailyChallenge\nDailyChallengeManager"]
+    subgraph MODELS["MODELS"]
+        direction TB
+        GameSession
+        GameMode
+        DailyChallenge
+        QuizQuestion
+        Card
     end
 
-    Views -->|"observes @Published state"| ViewModels
-    Views -->|"reads / writes"| Services
-    ViewModels -->|"reads / writes"| Services
-    Services -->|"encodes / decodes"| Models
-    ViewModels -->|"uses"| Models
+    VIEWS -->|"observes @Published"| VIEWMODELS
+    VIEWS -->|"reads / writes"| SERVICES
+    VIEWMODELS -->|"calls"| SERVICES
+    SERVICES -->|"encodes / decodes"| MODELS
+    VIEWMODELS -->|"uses"| MODELS
 ```
 
 ### Key Principles
