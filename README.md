@@ -238,7 +238,7 @@ IosApplicationTutorial/
 | SessionStore | JSON-encoded UserDefaults persistence for all sessions |
 | Stats tab | Filter bar, unified overview HUD (games / best score / streak), scrollable bar chart, personal bests, recent games list |
 | SwiftUI Charts | Horizontally scrollable `BarMark` chart showing score history per session |
-| Map tab | Clean MapKit pins (POIs excluded) for every game location; tap for session detail callout; filterable by game |
+| Map tab | Clean MapKit pins (POIs excluded) for every game location; location grouping/clustering with red count badges; tap for compact scrollable callout bubble attached to pin; filterable by game |
 | Settings tab | Daily notification toggle + time picker, data reset with confirmation dialog |
 | ShareLink | Share score result on all three game over screens |
 | Custom artwork | 3D clay-style matte game icons + cinematic background art in Home tiles and menus |
@@ -287,7 +287,6 @@ open IosApplicationTutorial.xcodeproj
 | **Session storage limit** | All sessions stored in `UserDefaults` — not suitable for very large volumes (1000+ sessions); no iCloud sync |
 | **ViewModels scope** | All 3 games use dedicated ViewModels; minor animation-timing logic remains inside `QuizView` directly |
 | **No user profile** | Player name is editable in Settings and persists via `@AppStorage` — no authentication or multi-user support |
-| **No pin clustering** | MapKit renders every individual session as its own pin; many sessions at the same location will overlap and stack visually |
 | **Combo multiplier cap** | Tap Frenzy combo multiplier has no upper bound — a very fast tap sequence can theoretically grow it unboundedly within a round |
 | **Notification re-prompt** | iOS only shows the permission popup once. If the user denies notifications, the in-app toggle silently has no effect — the user must manually enable it in iOS Settings → Notifications |
 | **Daily challenge reset** | The streak history is tied to the current weekday-rotation schedule. If the rotation targets are ever changed in a future update, historical streaks calculated against the old targets may be inaccurate |
@@ -296,14 +295,12 @@ open IosApplicationTutorial.xcodeproj
 
 ## Reflection
 
-When I started this project, I honestly did not expect it to grow this much. I just had to build a game app in SwiftUI. But week by week, one small feature led to another, and by the end I had three completely different games, a stats dashboard, a live map, notifications, and real internet data all working together inside one app.
+When I started this project, it was my very first time working with Swift and SwiftUI. At the beginning, everything felt completely new, and I wasn't sure how far I would get. What started as a coursework assignment to build a simple game ended up growing week by week into a full app with three different games, interactive maps, progress tracking, and live internet data.
 
-The early weeks taught me how important it is to keep your state clean. Even something as simple as a tap counter becomes messy fast if you do not separate the logic from the UI. Once I started putting game logic inside ViewModels and letting the View just react to published state, everything became much easier to read and change. That habit carried through the whole project.
+Building the first game, Tap Frenzy, taught me the basics of user interface design and handling button taps. But as I moved on to Light It Up, things got trickier trying to manage card grids, timers, and lives all at once. My lecturer’s guidance and feedback during sessions really helped me understand how to separate the game logic from the user interface so the code wouldn't turn into a mess. Whenever I hit a roadblock or got stuck on bugs, discussing ideas with my friends and classmates helped me figure out solutions and keep moving forward.
 
-The hardest part was coordinating a grid, a timer, a lives system, and a difficulty curve all at the same time in Light It Up. I had to write an algorithm that changed how many cards appear, how long they stay lit, and which colours show up based on the player's score and then do a completely separate version of that for timed mode. Getting those two paths to share the same game logic without duplicating code took real thinking.
+With Quiz Rush, learning how to connect the app to the internet to load real trivia questions automatically was a major step. Seeing live questions load onto the screen for the first time was a huge milestone for me.
 
-Networking in Quiz Rush was the moment MVVM finally clicked for me. The View does not need to know whether data is loading or failed. It just looks at the ViewModel's state and shows the right screen. That felt like a proper way to build something.
+The final phase brought everything together. Combining all three games into one main app shell with a Map tab to track where games were played, daily quest challenges, and notifications made it feel like a real, complete app.
 
-Week 4 surprised me the most. Connecting CoreLocation, MapKit, local notifications, SwiftUI Charts, and a shared data store all in one sprint was intense, but the reason it did not fall apart was because the previous weeks had already established clean boundaries between each part of the app.
-
-The biggest lesson overall: architecture decisions made early pay off later. And also  making something actually feel good to use takes more iterations than you expect.
+Looking back, learning Swift and SwiftUI from scratch was a big challenge, but seeing how much the app grew from a single tap button to a complete gaming hub was incredibly rewarding. The support from my lecturer and friends made a big difference. Overall, the biggest lesson I learned is that planning is the main thing if you plan your architecture and features correctly from day one, you can easily achieve your goals and build a complex app smoothly.
